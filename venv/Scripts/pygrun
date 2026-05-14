@@ -1,4 +1,4 @@
-#!P:\okc\f1-ml-project\venv\Scripts\python.exe
+#!P:\Projects\Github Projects\f1-ml-project\venv\Scripts\python.exe
 __author__ = 'jszheng'
 import optparse
 import sys

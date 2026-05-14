@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # 🏎️ F1 Race Prediction & Strategy System — 2025 Season
 ### ML-Powered · Future Race Predictions · Full Strategy Engine · Monte Carlo Simulation
 
@@ -314,3 +315,5 @@ git push -u origin main
 - Weather API integration for dynamic strategy adjustment
 - LSTM neural network for lap-by-lap prediction
 - Kubernetes deployment for production scale
+=======
+

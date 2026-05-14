@@ -1,0 +1,49 @@
+schema: '2.0'
+stages:
+  data_ingestion:
+    cmd: python ml_pipeline/data_ingestion.py
+    deps:
+    - path: data/raw/circuits.csv
+      hash: md5
+      md5: acf6bf0e3223d88c5a10c72f9a918674
+      size: 10104
+    - path: data/raw/constructors.csv
+      hash: md5
+      md5: 5e5fd44ce3bad5d49ba0f06ab50f0b54
+      size: 17478
+    - path: data/raw/drivers.csv
+      hash: md5
+      md5: b2b99a01466307dc95c6f273b8781778
+      size: 94367
+    - path: data/raw/lap_times.csv
+      hash: md5
+      md5: 11c54c53641190d566b33f7a843b9c7e
+      size: 17622395
+    - path: data/raw/pit_stops.csv
+      hash: md5
+      md5: e96f79c1c66a36a8707f0db47972d443
+      size: 443719
+    - path: data/raw/qualifying.csv
+      hash: md5
+      md5: 2abc6140414c276378ab25ae662c9814
+      size: 465231
+    - path: data/raw/races.csv
+      hash: md5
+      md5: 8895dc8ff7cd4d4ae1072130b80b7fdc
+      size: 164344
+    - path: data/raw/results.csv
+      hash: md5
+      md5: 2fa0062e049e04de1236411bb240e220
+      size: 1721961
+    - path: ml_pipeline/data_ingestion.py
+      hash: md5
+      md5: 201d7f540ce5a3e4782fbc3ae234506a
+      size: 1943
+    params:
+      params.yaml:
+        base.year_cutoff: 2000
+    outs:
+    - path: data/processed/ingested_master.csv
+      hash: md5
+      md5: 6ca031554da3362a4198b59759297f43
+      size: 2039520

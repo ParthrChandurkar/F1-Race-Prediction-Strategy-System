@@ -1,0 +1,15 @@
+{
+  "rows": 10079,
+  "cols": 28,
+  "year_cutoff": 2000,
+  "file_hashes": {
+    "results.csv": "2fa0062e049e04de1236411bb240e220",
+    "races.csv": "8895dc8ff7cd4d4ae1072130b80b7fdc",
+    "drivers.csv": "b2b99a01466307dc95c6f273b8781778",
+    "constructors.csv": "5e5fd44ce3bad5d49ba0f06ab50f0b54",
+    "qualifying.csv": "2abc6140414c276378ab25ae662c9814",
+    "pit_stops.csv": "e96f79c1c66a36a8707f0db47972d443",
+    "lap_times.csv": "11c54c53641190d566b33f7a843b9c7e",
+    "circuits.csv": "acf6bf0e3223d88c5a10c72f9a918674"
+  }
+}
