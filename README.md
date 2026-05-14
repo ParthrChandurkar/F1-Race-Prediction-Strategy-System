@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 # 🏎️ F1 Race Prediction & Strategy System — 2025 Season
 ### ML-Powered · Future Race Predictions · Full Strategy Engine · Monte Carlo Simulation
 
