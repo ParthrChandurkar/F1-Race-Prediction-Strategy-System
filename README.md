@@ -15,7 +15,7 @@ historical race data (2000–2024) to predict future 2025 season race outcomes.
 - Runs Monte Carlo race simulations (up to 2000 iterations)
 - Provides full pit stop strategy with tyre compounds, pit windows, and safety car analysis
 - Driver and team historical analysis (2014–2024)
-- Full ML model comparison dashboard
+- Full ML model comparison streamlit dashboard
 
 **2025 Grid Included:**
 All 20 current drivers including Hamilton→Ferrari, Antonelli→Mercedes,
