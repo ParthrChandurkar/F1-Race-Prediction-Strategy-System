@@ -56,7 +56,7 @@ The system has three main paths:
 - **MLOps path:** DVC, params, experiment logs, registry metadata, CI, and Docker keep the workflow reproducible.
 
 ```mermaid
-%%{init: {"theme": "base", "themeVariables": {"background": "#ffffff", "mainBkg": "#111111", "primaryColor": "#111111", "primaryTextColor": "#ffffff", "primaryBorderColor": "#111111", "lineColor": "#111111", "clusterBkg": "#ffffff", "clusterBorder": "#111111", "edgeLabelBackground": "#ffffff", "fontFamily": "Arial"}} }%%
+%%{init: {"theme": "base", "themeVariables": {"background": "#ffffff", "mainBkg": "#ffffff", "primaryColor": "#ffffff", "primaryTextColor": "#111111", "primaryBorderColor": "#111111", "lineColor": "#111111", "clusterBkg": "#ffffff", "clusterBorder": "#111111", "edgeLabelBackground": "#ffffff", "fontFamily": "Arial"}} }%%
 flowchart TB
     user["User / Race Analyst"]
     app["Streamlit App<br/>app.py"]
@@ -108,8 +108,8 @@ flowchart TB
     app --> predictor
     dashboard --> app
 
-    classDef blackBox fill:#111111,stroke:#111111,color:#ffffff;
-    class user,app,raw,ingest,prep,features,train,models,constants,predictor,simulator,strategy,dashboard,params,dvc,metrics,registry,ci,docker blackBox;
+    classDef outlineBox fill:#ffffff,stroke:#111111,color:#111111,stroke-width:1px;
+    class user,app,raw,ingest,prep,features,train,models,constants,predictor,simulator,strategy,dashboard,params,dvc,metrics,registry,ci,docker outlineBox;
 ```
 
 ### Runtime Flow
