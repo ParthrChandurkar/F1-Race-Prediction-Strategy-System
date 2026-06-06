@@ -61,52 +61,42 @@ flowchart TB
     user["User / Race Analyst"]
     app["Streamlit App<br/>app.py"]
 
-    user --> app
+    raw["Raw F1 CSV Files<br/>data/raw"]
+    ingest["Data Ingestion<br/>src/data_loader.py"]
+    prep["Preprocessing<br/>clean, encode, scale"]
+    features["Feature Engineering<br/>rolling form, targets"]
+    train["Model Training<br/>classification, regression, clustering"]
+    models["Model Artifacts<br/>models/*.pkl, scaler, encoders"]
 
-    subgraph train_flow["Training Pipeline"]
-        raw["Raw F1 CSV Files<br/>data/raw"]
-        ingest["Data Ingestion<br/>src/data_loader.py"]
-        prep["Preprocessing<br/>clean, encode, scale"]
-        features["Feature Engineering<br/>rolling form, targets"]
-        train["Model Training<br/>classification, regression, clustering"]
-        models["Model Artifacts<br/>models/*.pkl, scaler, encoders"]
+    constants["2025 Grid and Circuit Data<br/>src/f1_2024_data.py"]
+    predictor["Prediction Engine<br/>src/predictor.py"]
+    simulator["Monte Carlo Simulation<br/>src/simulator.py"]
+    strategy["Strategy Engine<br/>src/strategy.py"]
+    dashboard["Dashboard Pages<br/>prediction, simulation, strategy, analysis"]
 
-        raw --> ingest --> prep --> features --> train --> models
-    end
+    params["Configuration<br/>params.yaml"]
+    dvc["DVC Pipeline<br/>dvc.yaml"]
+    metrics["Evaluation Outputs<br/>metrics, feature importance"]
+    registry["Model Registry<br/>mlops/model_registry"]
+    ci["GitHub Actions<br/>tests and validation"]
+    docker["Docker Deployment<br/>Dockerfile, compose"]
 
-    subgraph app_flow["Application Runtime"]
-        constants["2025 Grid and Circuit Data<br/>src/f1_2024_data.py"]
-        predictor["Prediction Engine<br/>src/predictor.py"]
-        simulator["Monte Carlo Simulation<br/>src/simulator.py"]
-        strategy["Strategy Engine<br/>src/strategy.py"]
-        dashboard["Dashboard Pages<br/>prediction, simulation, strategy, analysis"]
+    raw --> ingest --> prep --> features --> train --> models
+    params --> dvc --> ingest
+    features --> metrics --> registry
 
-        constants --> predictor
-        models --> predictor
-        predictor --> simulator
-        predictor --> strategy
-        predictor --> dashboard
-        simulator --> dashboard
-        strategy --> dashboard
-    end
-
-    subgraph ops_flow["MLOps and Delivery"]
-        params["Configuration<br/>params.yaml"]
-        dvc["DVC Pipeline<br/>dvc.yaml"]
-        metrics["Evaluation Outputs<br/>metrics, feature importance"]
-        registry["Model Registry<br/>mlops/model_registry"]
-        ci["GitHub Actions<br/>tests and validation"]
-        docker["Docker Deployment<br/>Dockerfile, compose"]
-
-        params --> dvc
-        dvc --> ingest
-        features --> metrics --> registry
-        ci --> app
-        docker --> app
-    end
-
-    app --> predictor
+    user --> app --> predictor
+    constants --> predictor
+    models --> predictor
+    predictor --> simulator
+    predictor --> strategy
+    predictor --> dashboard
+    simulator --> dashboard
+    strategy --> dashboard
     dashboard --> app
+
+    ci --> app
+    docker --> app
 
     classDef outlineBox fill:#ffffff,stroke:#111111,color:#111111,stroke-width:1px;
     class user,app,raw,ingest,prep,features,train,models,constants,predictor,simulator,strategy,dashboard,params,dvc,metrics,registry,ci,docker outlineBox;
