@@ -56,58 +56,60 @@ The system has three main paths:
 - **MLOps path:** DVC, params, experiment logs, registry metadata, CI, and Docker keep the workflow reproducible.
 
 ```mermaid
-flowchart LR
-    analyst["User / Race Analyst"] --> ui["Streamlit Web App<br/>app.py"]
+%%{init: {"theme": "base", "themeVariables": {"background": "#ffffff", "mainBkg": "#111111", "primaryColor": "#111111", "primaryTextColor": "#ffffff", "primaryBorderColor": "#111111", "lineColor": "#111111", "clusterBkg": "#ffffff", "clusterBorder": "#111111", "edgeLabelBackground": "#ffffff", "fontFamily": "Arial"}} }%%
+flowchart TB
+    user["User / Race Analyst"]
+    app["Streamlit App<br/>app.py"]
 
-    subgraph ui_layer["Experience Layer"]
-        ui --> pages["8 Dashboard Pages<br/>Prediction, Simulation, Strategy,<br/>Analysis, Model Performance"]
+    user --> app
+
+    subgraph train_flow["Training Pipeline"]
+        raw["Raw F1 CSV Files<br/>data/raw"]
+        ingest["Data Ingestion<br/>src/data_loader.py"]
+        prep["Preprocessing<br/>clean, encode, scale"]
+        features["Feature Engineering<br/>rolling form, targets"]
+        train["Model Training<br/>classification, regression, clustering"]
+        models["Model Artifacts<br/>models/*.pkl, scaler, encoders"]
+
+        raw --> ingest --> prep --> features --> train --> models
     end
 
-    subgraph training["Training and Data Pipeline"]
-        raw["Kaggle F1 CSVs<br/>data/raw/"] --> loader["src/data_loader.py<br/>load_raw + build_master"]
-        loader --> ingested["data/processed/<br/>ingested_master.csv"]
-        ingested --> prep["src/preprocessing.py<br/>clean + encode + scale"]
-        prep --> featured["data/processed/<br/>featured_master.csv"]
-        featured --> train["src/train_models.py<br/>or ml_pipeline/train.py"]
-        train --> artifacts[("models/<br/>9 .pkl models<br/>scaler + encoders<br/>meta + metrics")]
-        train --> strategy_table[("data/processed/<br/>strategy_table.csv")]
+    subgraph app_flow["Application Runtime"]
+        constants["2025 Grid and Circuit Data<br/>src/f1_2024_data.py"]
+        predictor["Prediction Engine<br/>src/predictor.py"]
+        simulator["Monte Carlo Simulation<br/>src/simulator.py"]
+        strategy["Strategy Engine<br/>src/strategy.py"]
+        dashboard["Dashboard Pages<br/>prediction, simulation, strategy, analysis"]
+
+        constants --> predictor
+        models --> predictor
+        predictor --> simulator
+        predictor --> strategy
+        predictor --> dashboard
+        simulator --> dashboard
+        strategy --> dashboard
     end
 
-    subgraph inference["Prediction and Strategy Engines"]
-        pages --> predictor["src/predictor.py<br/>full-grid race prediction"]
-        predictor --> artifacts
-        constants["src/f1_2024_data.py<br/>2025 grid, circuits,<br/>driver skill, team ratings"] --> predictor
-        predictor --> results["Race Predictions<br/>finish, Top 10, podium, win"]
-        results --> simulator["src/simulator.py<br/>Monte Carlo race simulation"]
-        results --> strategy["src/strategy.py<br/>tyre and pit strategy"]
-        strategy_table --> strategy
-        simulator --> pages
-        strategy --> pages
-        artifacts --> pages
+    subgraph ops_flow["MLOps and Delivery"]
+        params["Configuration<br/>params.yaml"]
+        dvc["DVC Pipeline<br/>dvc.yaml"]
+        metrics["Evaluation Outputs<br/>metrics, feature importance"]
+        registry["Model Registry<br/>mlops/model_registry"]
+        ci["GitHub Actions<br/>tests and validation"]
+        docker["Docker Deployment<br/>Dockerfile, compose"]
+
+        params --> dvc
+        dvc --> ingest
+        features --> metrics --> registry
+        ci --> app
+        docker --> app
     end
 
-    subgraph mlops["MLOps and Delivery"]
-        params["params.yaml"] --> dvc["dvc.yaml<br/>5 reproducible stages"]
-        dvc --> loader
-        featured --> evaluate["ml_pipeline/evaluate.py<br/>metrics + feature importance"]
-        evaluate --> artifacts
-        evaluate --> registry["mlops/model_registry/<br/>registry.json"]
-        train --> experiments["mlops/experiments/<br/>run logs"]
-        ci["GitHub Actions CI"] --> tests["pytest + syntax checks<br/>params and DVC validation"]
-        docker["Dockerfile + docker-compose.yml"] --> ui
-    end
+    app --> predictor
+    dashboard --> app
 
-    classDef user fill:#111827,stroke:#f97316,color:#fff;
-    classDef app fill:#7f1d1d,stroke:#ef4444,color:#fff;
-    classDef data fill:#0f766e,stroke:#2dd4bf,color:#fff;
-    classDef model fill:#312e81,stroke:#818cf8,color:#fff;
-    classDef mlops fill:#374151,stroke:#9ca3af,color:#fff;
-
-    class analyst user;
-    class ui,pages app;
-    class raw,loader,ingested,prep,featured,strategy_table data;
-    class train,artifacts,predictor,constants,results,simulator,strategy model;
-    class params,dvc,evaluate,registry,experiments,ci,tests,docker mlops;
+    classDef blackBox fill:#111111,stroke:#111111,color:#ffffff;
+    class user,app,raw,ingest,prep,features,train,models,constants,predictor,simulator,strategy,dashboard,params,dvc,metrics,registry,ci,docker blackBox;
 ```
 
 ### Runtime Flow
