@@ -1,128 +1,254 @@
+# F1 Race Prediction & Strategy System - 2025 Season
 
-# 🏎️ F1 Race Prediction & Strategy System — 2025 Season
-### ML-Powered · Future Race Predictions · Full Strategy Engine · Monte Carlo Simulation
+ML-powered Formula 1 race prediction system with a Streamlit dashboard, trained
+scikit-learn models, Monte Carlo race simulation, tyre strategy recommendations,
+and a DVC-based MLOps workflow.
+
+---
+
+## Table of Contents
+
+- [Project Overview](#project-overview)
+- [Architecture](#architecture)
+- [Dataset](#dataset)
+- [Folder Structure](#folder-structure)
+- [Installation](#installation)
+- [Running the Project](#running-the-project)
+- [UI Pages](#ui-pages)
+- [DVC Pipeline](#dvc-pipeline)
+- [Docker](#docker)
+- [Tests](#tests)
+- [ML Models](#ml-models)
+- [Features Used](#features-used)
+- [CI/CD](#cicd)
+- [Troubleshooting](#troubleshooting)
+- [Future Scope](#future-scope)
 
 ---
 
 ## Project Overview
 
-A professional Formula 1 prediction system that uses machine learning trained on
-historical race data (2000–2024) to predict future 2025 season race outcomes.
+This project uses historical Formula 1 data from 2000-2024 to train machine
+learning models that predict future 2025 race outcomes.
 
 **What it does:**
-- Predicts finishing positions for all 20 current F1 drivers at any 2025 circuit
-- Predicts qualifying order and pole position probability
-- Runs Monte Carlo race simulations (up to 2000 iterations)
-- Provides full pit stop strategy with tyre compounds, pit windows, and safety car analysis
-- Driver and team historical analysis (2014–2024)
-- Full ML model comparison streamlit dashboard
 
-**2025 Grid Included:**
-All 20 current drivers including Hamilton→Ferrari, Antonelli→Mercedes,
-Sainz→Williams, Lawson→Racing Bulls, Doohan→Alpine
+- Predicts finishing order, Top 10 probability, podium probability, and win probability for the 2025 grid.
+- Uses Random Forest classification and Ridge regression as the main future-race prediction stack.
+- Runs Monte Carlo race simulations with win, podium, Top 10, DNF, and average-finish probabilities.
+- Recommends tyre compounds, stop counts, pit windows, safety-car responses, and undercut strategy.
+- Provides driver, team, feature, model-performance, and historical-analysis dashboard pages.
+- Supports both one-shot training and a reproducible DVC pipeline.
+
+**Bundled 2025-style grid constants include:**
+
+Hamilton at Ferrari, Antonelli at Mercedes, Sainz at Williams, Lawson at Racing
+Bulls, Doohan at Alpine, and 24 configured circuits.
+
+---
+
+## Architecture
+
+The system has three main paths:
+
+- **Training path:** raw CSVs are merged, cleaned, encoded, feature engineered, and used to train 9 models.
+- **Inference path:** the Streamlit UI calls prediction, simulation, and strategy modules backed by saved artifacts.
+- **MLOps path:** DVC, params, experiment logs, registry metadata, CI, and Docker keep the workflow reproducible.
+
+```mermaid
+flowchart LR
+    analyst["User / Race Analyst"] --> ui["Streamlit Web App<br/>app.py"]
+
+    subgraph ui_layer["Experience Layer"]
+        ui --> pages["8 Dashboard Pages<br/>Prediction, Simulation, Strategy,<br/>Analysis, Model Performance"]
+    end
+
+    subgraph training["Training and Data Pipeline"]
+        raw["Kaggle F1 CSVs<br/>data/raw/"] --> loader["src/data_loader.py<br/>load_raw + build_master"]
+        loader --> ingested["data/processed/<br/>ingested_master.csv"]
+        ingested --> prep["src/preprocessing.py<br/>clean + encode + scale"]
+        prep --> featured["data/processed/<br/>featured_master.csv"]
+        featured --> train["src/train_models.py<br/>or ml_pipeline/train.py"]
+        train --> artifacts[("models/<br/>9 .pkl models<br/>scaler + encoders<br/>meta + metrics")]
+        train --> strategy_table[("data/processed/<br/>strategy_table.csv")]
+    end
+
+    subgraph inference["Prediction and Strategy Engines"]
+        pages --> predictor["src/predictor.py<br/>full-grid race prediction"]
+        predictor --> artifacts
+        constants["src/f1_2024_data.py<br/>2025 grid, circuits,<br/>driver skill, team ratings"] --> predictor
+        predictor --> results["Race Predictions<br/>finish, Top 10, podium, win"]
+        results --> simulator["src/simulator.py<br/>Monte Carlo race simulation"]
+        results --> strategy["src/strategy.py<br/>tyre and pit strategy"]
+        strategy_table --> strategy
+        simulator --> pages
+        strategy --> pages
+        artifacts --> pages
+    end
+
+    subgraph mlops["MLOps and Delivery"]
+        params["params.yaml"] --> dvc["dvc.yaml<br/>5 reproducible stages"]
+        dvc --> loader
+        featured --> evaluate["ml_pipeline/evaluate.py<br/>metrics + feature importance"]
+        evaluate --> artifacts
+        evaluate --> registry["mlops/model_registry/<br/>registry.json"]
+        train --> experiments["mlops/experiments/<br/>run logs"]
+        ci["GitHub Actions CI"] --> tests["pytest + syntax checks<br/>params and DVC validation"]
+        docker["Dockerfile + docker-compose.yml"] --> ui
+    end
+
+    classDef user fill:#111827,stroke:#f97316,color:#fff;
+    classDef app fill:#7f1d1d,stroke:#ef4444,color:#fff;
+    classDef data fill:#0f766e,stroke:#2dd4bf,color:#fff;
+    classDef model fill:#312e81,stroke:#818cf8,color:#fff;
+    classDef mlops fill:#374151,stroke:#9ca3af,color:#fff;
+
+    class analyst user;
+    class ui,pages app;
+    class raw,loader,ingested,prep,featured,strategy_table data;
+    class train,artifacts,predictor,constants,results,simulator,strategy model;
+    class params,dvc,evaluate,registry,experiments,ci,tests,docker mlops;
+```
+
+### Runtime Flow
+
+1. The user selects a circuit, weather, grid assumptions, and simulation settings in `app.py`.
+2. `src/predictor.py` loads the saved scaler, encoders, Random Forest classifier, and Ridge regressor from `models/`.
+3. `src/f1_2024_data.py` supplies driver/team ratings and circuit metadata for future 2025 predictions.
+4. Predictions feed `src/simulator.py` for Monte Carlo results and `src/strategy.py` for pit/tyre recommendations.
+5. Metrics, feature importance, model artifacts, and processed data are displayed back in the Streamlit UI.
+
+### Training Flow
+
+1. `src/data_loader.py` reads and merges the required Kaggle CSV files.
+2. `src/preprocessing.py` cleans rows, imputes missing values, label-encodes categories, and scales features.
+3. `src/feature_engineering.py` adds rolling form, win-rate, Top 10, Top 3, and grid-delta features.
+4. `src/train_models.py` or `ml_pipeline/train.py` trains classifiers, regressors, and K-Means.
+5. `ml_pipeline/evaluate.py` writes metrics, feature importance, and registers the best classifier.
 
 ---
 
 ## Dataset
 
-Source: https://www.kaggle.com/datasets/rohanrao/formula-1-world-championship-1950-2020
+Source: <https://www.kaggle.com/datasets/rohanrao/formula-1-world-championship-1950-2020>
 
-**Files needed in data/raw/:**
+Place these required files in `data/raw/`:
+
+```text
+results.csv
+races.csv
+drivers.csv
+constructors.csv
+qualifying.csv
+pit_stops.csv
+lap_times.csv
+circuits.csv
 ```
-results.csv  |  races.csv  |  drivers.csv  |  constructors.csv
-qualifying.csv  |  pit_stops.csv  |  lap_times.csv  |  circuits.csv
-```
+
+The repository also includes additional raw F1 tables, but the core loader uses
+the eight files listed above.
 
 ---
 
 ## Folder Structure
 
-```
+```text
 f1-ml-project/
-├── app.py                        ← Streamlit web app (8 pages)
-├── requirements.txt
-├── params.yaml                   ← DVC parameters
-├── dvc.yaml                      ← DVC pipeline
-├── Dockerfile
-├── docker-compose.yml
-├── Makefile
-├── install.ps1                   ← Windows SSL-safe installer
-├── install.bat
-├── SETUP_WINDOWS.md
-│
-├── src/
-│   ├── f1_2024_data.py           ← 2025 driver grid, circuits, ratings
-│   ├── data_loader.py            ← Load and merge 8 CSVs
-│   ├── preprocessing.py          ← Clean, encode, scale
-│   ├── feature_engineering.py   ← Rolling averages, targets
-│   ├── train_models.py           ← Train all 9 ML models
-│   ├── evaluate_models.py        ← Print evaluation report
-│   ├── predictor.py              ← Future race predictions
-│   ├── simulator.py              ← Monte Carlo simulation
-│   └── strategy.py               ← Full strategy engine
-│
-├── ml_pipeline/                  ← DVC stage scripts
-│   ├── data_ingestion.py
-│   ├── preprocessing.py
-│   ├── feature_engineering.py
-│   ├── train.py
-│   └── evaluate.py
-│
-├── mlops/
-│   ├── model_registry/
-│   │   ├── register_model.py
-│   │   └── registry.json
-│   └── experiments/
-│
-├── tests/
-│   ├── test_data_loading.py
-│   ├── test_model_files.py
-│   └── test_prediction.py
-│
-├── docs/
-│   └── architecture.md
-│
-├── data/
-│   ├── raw/                      ← Place Kaggle CSVs here
-│   └── processed/                ← Auto-generated
-│
-└── models/                       ← Auto-generated after training
+|-- app.py                         Streamlit web app with 8 pages
+|-- requirements.txt               Python dependencies
+|-- params.yaml                    DVC-tracked configuration
+|-- dvc.yaml                       5-stage DVC pipeline
+|-- Dockerfile                     Streamlit container image
+|-- docker-compose.yml             App and optional training services
+|-- Makefile                       Common local commands
+|-- install.ps1 / install.bat      Windows install helpers
+|-- SETUP_WINDOWS.md               Windows setup notes
+|
+|-- src/
+|   |-- f1_2024_data.py            2025 grid, circuits, skill, team ratings
+|   |-- data_loader.py             Loads and merges raw CSV tables
+|   |-- preprocessing.py           Cleans, encodes, scales, selects features
+|   |-- feature_engineering.py     Rolling averages, win rate, targets
+|   |-- train_models.py            One-shot training script
+|   |-- evaluate_models.py         Evaluation report helper
+|   |-- predictor.py               Future race prediction engine
+|   |-- simulator.py               Monte Carlo simulation
+|   `-- strategy.py                Pit stop and tyre strategy engine
+|
+|-- ml_pipeline/
+|   |-- data_ingestion.py          DVC stage 1
+|   |-- preprocessing.py           DVC stage 2
+|   |-- feature_engineering.py     DVC stage 3
+|   |-- train.py                   DVC stage 4
+|   `-- evaluate.py                DVC stage 5
+|
+|-- mlops/
+|   |-- model_registry/
+|   |   |-- register_model.py      Local JSON model registry API
+|   |   `-- registry.json          Registered model metadata
+|   `-- experiments/               Training run logs
+|
+|-- tests/
+|   |-- test_data_loading.py
+|   |-- test_model_files.py
+|   `-- test_prediction.py
+|
+|-- docs/
+|   `-- architecture.md
+|
+|-- data/
+|   |-- raw/                       Kaggle CSV input files
+|   `-- processed/                 Generated pipeline outputs
+|
+`-- models/                        Trained models, encoders, metrics, metadata
 ```
 
 ---
 
 ## Installation
 
-### Step 1 — Create virtual environment
+### Step 1 - Create a virtual environment
 
 ```bash
 python -m venv venv
+```
 
-# Windows PowerShell
+Windows PowerShell:
+
+```powershell
 .\venv\Scripts\Activate.ps1
+```
 
-# macOS / Linux
+macOS / Linux:
+
+```bash
 source venv/bin/activate
 ```
 
-### Step 2 — Install dependencies
+### Step 2 - Install dependencies
 
-**Normal networks:**
+Normal networks:
+
 ```bash
 pip install -r requirements.txt
 ```
 
-**College / corporate network (SSL error fix):**
-```powershell
-# Windows
-.\install.ps1
+College or corporate networks with SSL issues:
 
-# OR manual:
+```powershell
+.\install.ps1
+```
+
+Manual trusted-host fallback:
+
+```powershell
 pip install scikit-learn numpy pandas joblib streamlit plotly dvc pyyaml pytest matplotlib seaborn --trusted-host pypi.org --trusted-host files.pythonhosted.org --trusted-host pypi.python.org
 ```
 
-**Permanent SSL fix — create C:\Users\YourName\pip\pip.ini:**
+Permanent Windows pip SSL workaround:
+
 ```ini
+# C:\Users\YourName\pip\pip.ini
 [global]
 trusted-host =
     pypi.org
@@ -134,45 +260,35 @@ trusted-host =
 
 ## Running the Project
 
-### Step 1 — Place CSV files
-Copy the 8 Kaggle CSV files into `data/raw/`
+### Step 1 - Place CSV files
 
-### Step 2 — Train models
+Copy the required Kaggle CSV files into `data/raw/`.
+
+### Step 2 - Train models
+
 ```bash
 python src/train_models.py
 ```
 
-Expected output:
-```
-============================================================
-  F1 ML PROJECT — MODEL TRAINING
-============================================================
+Expected high-level output:
+
+```text
 [1/6] Loading raw CSVs ...
-      Master shape: (26000, 35)
 [2/6] Cleaning ...
 [3/6] Encoding categoricals ...
 [4/6] Engineering features ...
 [5/6] Splitting train/test ...
-      Train: (19600, 11)  Test: (4900, 11)
 [6/6] Training models ...
-  >> Logistic Regression   Accuracy=0.84  F1=0.81
-  >> Decision Tree         Accuracy=0.82  F1=0.80
-  >> Random Forest         Accuracy=0.87  F1=0.85
-  >> SVM                   Accuracy=0.85  F1=0.83
-  >> Naive Bayes            Accuracy=0.76  F1=0.73
-  >> Linear Regression     MAE=2.8  R2=0.71
-  >> Ridge Regression      MAE=2.7  R2=0.72
-  >> Lasso Regression      MAE=2.9  R2=0.70
-  >> K-Means Clustering    Inertia=...
-  ALL MODELS TRAINED AND SAVED
+ALL MODELS TRAINED AND SAVED
 ```
 
-### Step 3 — Launch the app
+### Step 3 - Launch the app
+
 ```bash
 streamlit run app.py
 ```
 
-Open: **http://localhost:8501**
+Open: <http://localhost:8501>
 
 ---
 
@@ -180,99 +296,113 @@ Open: **http://localhost:8501**
 
 | Page | What it does |
 |---|---|
-| 🏠 Dashboard | 2025 driver grid, team ratings, system overview |
-| 🏁 Race Prediction | Predict full 20-driver race result for any 2025 circuit |
-| 🥇 Qualifying Prediction | Predict qualifying order and pole position |
-| 🎲 Race Simulation | Monte Carlo simulation with win/podium/DNF probabilities |
-| 🛞 Strategy Centre | Full pit stop strategy, tyre compounds, pit windows, SC analysis |
-| 👤 Driver Analysis | 10-year historical stats, circuit form, skill comparison |
-| 🏭 Team Analysis | Constructor trends, driver stats, 2025 lineup |
-| 📊 Model Performance | All 9 model metrics, confusion matrix, feature importance |
+| Dashboard | Shows the 2025 driver grid, team ratings, high-level system overview, and core modules. |
+| Race Prediction | Predicts full-grid finishing order, Top 10 probability, podium probability, and win probability for a selected circuit. |
+| Feature Analysis | Explores qualifying/grid impact and feature contribution patterns. |
+| Race Simulation | Runs Monte Carlo simulations using prediction probabilities, DNF risk, and circuit overtaking profile. |
+| Strategy Centre | Recommends stop count, tyre compounds, pit windows, safety-car response, and undercut approach. |
+| Driver Analysis | Shows historical driver statistics, form, circuit performance, and skill comparison. |
+| Team Analysis | Shows constructor trends, driver stats, and 2025 lineup comparisons. |
+| Model Performance | Displays model metrics, confusion matrices, regression scores, and feature importance. |
 
 ---
 
-## Running DVC Pipeline
+## DVC Pipeline
+
+Run the full reproducible ML pipeline:
 
 ```bash
-# Initialize (first time only)
-dvc init -f
-
-# Run full pipeline
-dvc repro
-
-# Check status
-dvc status
-
-# Change a parameter and re-run (only affected stages re-run)
-# Edit params.yaml -> change n_estimators: 200
 dvc repro
 ```
 
----
+Pipeline stages:
 
-## Running Docker
+| Stage | Script | Main output |
+|---|---|---|
+| `data_ingestion` | `ml_pipeline/data_ingestion.py` | `data/processed/ingested_master.csv` |
+| `preprocessing` | `ml_pipeline/preprocessing.py` | `data/processed/master.csv` |
+| `feature_engineering` | `ml_pipeline/feature_engineering.py` | `data/processed/featured_master.csv` |
+| `train` | `ml_pipeline/train.py` | model `.pkl` files, encoders, scaler, `meta.json` |
+| `evaluate` | `ml_pipeline/evaluate.py` | `metrics.json`, `feature_importance.json`, registry entry |
+
+Useful commands:
 
 ```bash
-# Train models locally first, then:
+dvc init -f
+dvc repro
+dvc status
+```
+
+Change a value in `params.yaml`, then run `dvc repro` to rerun only the affected
+stages.
+
+---
+
+## Docker
+
+Build and run the Streamlit app:
+
+```bash
 docker build -t f1-ml-app .
 docker-compose up --build
+```
 
-# Open http://localhost:8501
+Open: <http://localhost:8501>
 
-# Stop
+Stop containers:
+
+```bash
 docker-compose down
 ```
 
+Optional training profile:
+
+```bash
+docker-compose --profile train up
+```
+
 ---
 
-## Running Tests
+## Tests
 
 ```bash
 pytest tests/ -v --tb=short
 ```
 
----
-
-## GitHub CI/CD
-
-Push to GitHub and CI automatically:
-1. Checks all 17 source files exist
-2. Compiles all Python modules
-3. Validates params.yaml and dvc.yaml
-4. Runs simulator and strategy unit tests
-5. Validates model registry
-
-```bash
-git init
-git add .
-git commit -m "F1 ML Project - Initial commit"
-git remote add origin https://github.com/YOUR_USERNAME/f1-ml-project.git
-git branch -M main
-git push -u origin main
-```
+The GitHub Actions workflow also runs syntax checks, selected simulation and
+strategy tests, parameter validation, DVC validation, and model-registry checks.
 
 ---
 
 ## ML Models
 
-### Classification (predicts: will driver finish Top 10?)
-| Model | Accuracy | F1 |
-|---|---|---|
-| Random Forest | ~87% | ~0.85 |
-| SVM | ~85% | ~0.83 |
-| Logistic Regression | ~84% | ~0.81 |
-| Decision Tree | ~82% | ~0.80 |
-| Naive Bayes | ~76% | ~0.73 |
+### Classification
 
-### Regression (predicts: finishing position 1–20)
-| Model | MAE | R² |
-|---|---|---|
-| Ridge Regression | ~2.7 | ~0.72 |
-| Linear Regression | ~2.8 | ~0.71 |
-| Lasso Regression | ~2.9 | ~0.70 |
+Predicts whether a driver finishes in the Top 10.
+
+| Model | Artifact |
+|---|---|
+| Random Forest | `models/Random_Forest.pkl` |
+| SVM | `models/SVM.pkl` |
+| Logistic Regression | `models/Logistic_Regression.pkl` |
+| Decision Tree | `models/Decision_Tree.pkl` |
+| Naive Bayes | `models/Naive_Bayes.pkl` |
+
+### Regression
+
+Predicts finishing position from 1-20.
+
+| Model | Artifact |
+|---|---|
+| Ridge Regression | `models/Ridge_Regression.pkl` |
+| Linear Regression | `models/Linear_Regression.pkl` |
+| Lasso Regression | `models/Lasso_Regression.pkl` |
 
 ### Unsupervised
-- K-Means (k=5): Groups drivers into 5 performance tiers
+
+| Model | Purpose |
+|---|---|
+| K-Means | Groups drivers/races into performance-style clusters. |
 
 ---
 
@@ -280,17 +410,33 @@ git push -u origin main
 
 | Feature | Source | Type |
 |---|---|---|
-| grid | results.csv | Raw |
-| qual_position | qualifying.csv | Raw |
-| year | races.csv | Raw |
-| driverRef_enc | drivers.csv | Encoded |
-| constructorRef_enc | constructors.csv | Encoded |
-| circuitRef_enc | circuits.csv | Encoded |
-| driver_avg_finish | Computed | Rolling-5 |
-| team_avg_finish | Computed | Rolling-5 |
-| driver_win_rate | Computed | Rolling-10 |
-| pit_stop_count | pit_stops.csv | Aggregated |
-| avg_lap_ms | lap_times.csv | Aggregated |
+| `grid` | `results.csv` | Raw |
+| `qual_position` | `qualifying.csv` | Raw |
+| `year` | `races.csv` | Raw |
+| `driverRef_enc` | `drivers.csv` | Encoded |
+| `constructorRef_enc` | `constructors.csv` | Encoded |
+| `circuitRef_enc` | `circuits.csv` | Encoded |
+| `driver_avg_finish` | Computed | Rolling 5-race form |
+| `team_avg_finish` | Computed | Rolling 5-race constructor form |
+| `driver_win_rate` | Computed | Rolling 10-race win rate |
+| `pit_stop_count` | `pit_stops.csv` | Aggregated |
+| `avg_lap_ms` | `lap_times.csv` | Aggregated |
+
+---
+
+## CI/CD
+
+GitHub Actions runs on pushes and pull requests.
+
+Main checks:
+
+1. Required project files exist.
+2. Python modules compile.
+3. `params.yaml` contains the expected structure.
+4. `dvc.yaml` has all five stages and no duplicate outputs.
+5. Selected simulation and strategy tests pass.
+6. The local model registry module can load registry entries.
+7. Docker project files exist.
 
 ---
 
@@ -298,22 +444,20 @@ git push -u origin main
 
 | Problem | Fix |
 |---|---|
-| SSL certificate error | Use `.\install.ps1` or add pip.ini |
-| No module named joblib | SSL blocked install — use trusted-host flags |
-| DVC duplicate output error | Already fixed in dvc.yaml — metrics.json only in evaluate stage |
-| Models not found in app | Run `python src/train_models.py` first |
-| Port 8501 busy | `streamlit run app.py --server.port 8502` |
-| Docker exits immediately | Train models first so models/ folder exists |
+| SSL certificate error during install | Use `.\install.ps1` or configure `pip.ini` with trusted hosts. |
+| `No module named joblib` | Install dependencies again with the trusted-host command above. |
+| DVC duplicate output error | Keep `metrics.json` only in the `evaluate` stage metrics section. |
+| Models not found in app | Run `python src/train_models.py` or `dvc repro` first. |
+| Port 8501 busy | Run `streamlit run app.py --server.port 8502`. |
+| Docker app starts without predictions | Train models first so `models/` contains the required artifacts. |
 
 ---
 
 ## Future Scope
 
-- MLflow visual experiment tracking
-- Remote DVC storage (Google Drive / S3)
-- Real-time Ergast API integration for live 2025 data
-- Weather API integration for dynamic strategy adjustment
-- LSTM neural network for lap-by-lap prediction
-- Kubernetes deployment for production scale
-=======
-
+- MLflow visual experiment tracking.
+- Remote DVC storage such as Google Drive or S3.
+- Live race-data integration.
+- Weather API integration for dynamic strategy adjustment.
+- Lap-by-lap neural forecasting.
+- Production deployment with Kubernetes or a managed container platform.

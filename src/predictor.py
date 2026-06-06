@@ -62,6 +62,68 @@ def build_input_vector(
     return x
 
 
+CLASSIFIER_MODEL_NAMES = [
+    "Logistic_Regression",
+    "Decision_Tree",
+    "Random_Forest",
+    "SVM",
+    "Naive_Bayes",
+]
+
+REGRESSION_MODEL_NAMES = [
+    "Linear_Regression",
+    "Ridge_Regression",
+    "Lasso_Regression",
+]
+
+
+def predict_top10(x: np.ndarray, model_name: str = "Random_Forest") -> dict:
+    """Predict Top 10 class and probability for a prepared input vector."""
+    model = _load(model_name)
+    x_s = _scaler().transform(x)
+    prediction = int(model.predict(x_s)[0])
+
+    probability = float(prediction)
+    if hasattr(model, "predict_proba"):
+        classes = list(getattr(model, "classes_", []))
+        positive_idx = classes.index(1) if 1 in classes else -1
+        try:
+            probability = float(model.predict_proba(x_s)[0][positive_idx])
+        except Exception:
+            if hasattr(model, "decision_function"):
+                score = float(np.ravel(model.decision_function(x_s))[0])
+                probability = float(1.0 / (1.0 + np.exp(-score)))
+
+    return {
+        "model": model_name,
+        "prediction": prediction,
+        "probability": round(probability, 4),
+    }
+
+
+def predict_position(x: np.ndarray, model_name: str = "Ridge_Regression") -> dict:
+    """Predict finishing position for a prepared input vector."""
+    model = _load(model_name)
+    x_s = _scaler().transform(x)
+    position = float(np.clip(model.predict(x_s)[0], 1.0, 20.0))
+    return {
+        "model": model_name,
+        "predicted_position": round(position, 2),
+    }
+
+
+def predict_all_models(x: np.ndarray) -> dict:
+    """Run all saved classification and regression models for one input vector."""
+    return {
+        "classification": {
+            name: predict_top10(x, name) for name in CLASSIFIER_MODEL_NAMES
+        },
+        "regression": {
+            name: predict_position(x, name) for name in REGRESSION_MODEL_NAMES
+        },
+    }
+
+
 def predict_driver(
     driver_name: str,
     circuit_ref: str,

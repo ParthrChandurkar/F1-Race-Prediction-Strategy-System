@@ -195,6 +195,8 @@ def recommend(
     # Circuit note
     circuit_note_key = circuit_ref if circuit_ref in CIRCUIT_STRATEGY_NOTES else "default"
     circuit_note = CIRCUIT_STRATEGY_NOTES[circuit_note_key]
+    compound_arrow = " \u2192 "
+    tyre_strategy = f"{primary['name']} ({compound_arrow.join(primary['compounds'])})"
 
     return {
         "circuit_name":        circuit_name,
@@ -204,7 +206,9 @@ def recommend(
         "grid_position":       grid_position,
         "driver_name":         driver_name,
         "recommended_stops":   recommended_stops,
+        "recommended_pit_stops": recommended_stops,
         "primary_strategy":    primary,
+        "tyre_strategy":       tyre_strategy,
         "pit_windows":         pit_windows,
         "alternatives":        alternatives,
         "tyre_deg_level":      tyre_deg,
