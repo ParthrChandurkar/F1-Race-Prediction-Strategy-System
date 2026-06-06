@@ -55,52 +55,9 @@ The system has three main paths:
 - **Inference path:** the Streamlit UI calls prediction, simulation, and strategy modules backed by saved artifacts.
 - **MLOps path:** DVC, params, experiment logs, registry metadata, CI, and Docker keep the workflow reproducible.
 
-```mermaid
-%%{init: {"theme": "base", "themeVariables": {"background": "#ffffff", "mainBkg": "#ffffff", "primaryColor": "#ffffff", "primaryTextColor": "#111111", "primaryBorderColor": "#111111", "lineColor": "#111111", "clusterBkg": "#ffffff", "clusterBorder": "#111111", "edgeLabelBackground": "#ffffff", "fontFamily": "Arial"}} }%%
-flowchart TB
-    user["User / Race Analyst"]
-    app["Streamlit App<br/>app.py"]
-
-    raw["Raw F1 CSV Files<br/>data/raw"]
-    ingest["Data Ingestion<br/>src/data_loader.py"]
-    prep["Preprocessing<br/>clean, encode, scale"]
-    features["Feature Engineering<br/>rolling form, targets"]
-    train["Model Training<br/>classification, regression, clustering"]
-    models["Model Artifacts<br/>models/*.pkl, scaler, encoders"]
-
-    constants["2025 Grid and Circuit Data<br/>src/f1_2024_data.py"]
-    predictor["Prediction Engine<br/>src/predictor.py"]
-    simulator["Monte Carlo Simulation<br/>src/simulator.py"]
-    strategy["Strategy Engine<br/>src/strategy.py"]
-    dashboard["Dashboard Pages<br/>prediction, simulation, strategy, analysis"]
-
-    params["Configuration<br/>params.yaml"]
-    dvc["DVC Pipeline<br/>dvc.yaml"]
-    metrics["Evaluation Outputs<br/>metrics, feature importance"]
-    registry["Model Registry<br/>mlops/model_registry"]
-    ci["GitHub Actions<br/>tests and validation"]
-    docker["Docker Deployment<br/>Dockerfile, compose"]
-
-    raw --> ingest --> prep --> features --> train --> models
-    params --> dvc --> ingest
-    features --> metrics --> registry
-
-    user --> app --> predictor
-    constants --> predictor
-    models --> predictor
-    predictor --> simulator
-    predictor --> strategy
-    predictor --> dashboard
-    simulator --> dashboard
-    strategy --> dashboard
-    dashboard --> app
-
-    ci --> app
-    docker --> app
-
-    classDef outlineBox fill:#ffffff,stroke:#111111,color:#111111,stroke-width:1px;
-    class user,app,raw,ingest,prep,features,train,models,constants,predictor,simulator,strategy,dashboard,params,dvc,metrics,registry,ci,docker outlineBox;
-```
+<p align="center">
+  <img src="docs/architecture-diagram.svg" alt="F1 Race Prediction and Strategy System architecture diagram" width="100%">
+</p>
 
 ### Runtime Flow
 
