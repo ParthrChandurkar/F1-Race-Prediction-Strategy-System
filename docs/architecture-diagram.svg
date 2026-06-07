@@ -11,8 +11,8 @@
       .group { fill: #ffffff; stroke: #2f80ed; stroke-width: 2; stroke-dasharray: 8 7; }
       .group-title { font: 700 22px Arial, sans-serif; fill: #111111; }
       .box { fill: #ffffff; stroke: #111111; stroke-width: 2; }
-      .box-title { font: 700 20px Arial, sans-serif; fill: #111111; }
-      .box-sub { font: 16px Arial, sans-serif; fill: #111111; }
+      .box-title { font: 700 18px Arial, sans-serif; fill: #111111; }
+      .box-sub { font: 15px Arial, sans-serif; fill: #111111; }
       .small { font: 14px Arial, sans-serif; fill: #111111; }
       .arrow { stroke: #111111; stroke-width: 2; fill: none; marker-end: url(#arrow); }
       .arrow-thin { stroke: #111111; stroke-width: 1.7; fill: none; marker-end: url(#arrow); }
@@ -27,11 +27,11 @@
   <text x="800" y="48" text-anchor="middle" class="group-title">F1 Race Prediction and Strategy System Architecture</text>
 
   <!-- Region boundaries -->
-  <rect class="group" x="70" y="95" width="520" height="630" rx="4" />
+  <rect class="group" x="70" y="95" width="540" height="630" rx="4" />
   <text x="95" y="128" class="group-title">Training Pipeline</text>
 
-  <rect class="group" x="660" y="95" width="570" height="630" rx="4" />
-  <text x="685" y="128" class="group-title">Application Runtime</text>
+  <rect class="group" x="650" y="95" width="600" height="630" rx="4" />
+  <text x="675" y="128" class="group-title">Application Runtime</text>
 
   <rect class="group" x="1290" y="95" width="240" height="630" rx="4" />
   <text x="1315" y="128" class="group-title">MLOps</text>
@@ -45,49 +45,49 @@
   </g>
 
   <!-- Training pipeline boxes -->
-  <g transform="translate(115,165)">
-    <rect class="box" x="0" y="0" width="190" height="86" rx="2" />
+  <g transform="translate(105,165)">
+    <rect class="box" x="0" y="0" width="220" height="86" rx="2" />
     <path class="icon" d="M 24 20 H 58 L 70 32 V 66 H 24 Z" />
     <path class="icon" d="M 58 20 V 32 H 70" />
-    <text x="112" y="36" text-anchor="middle" class="box-title">Raw CSVs</text>
-    <text x="112" y="62" text-anchor="middle" class="box-sub">data/raw</text>
+    <text x="96" y="36" text-anchor="start" class="box-title">Raw CSVs</text>
+    <text x="96" y="62" text-anchor="start" class="box-sub">data/raw</text>
   </g>
 
-  <g transform="translate(355,165)">
-    <rect class="box" x="0" y="0" width="190" height="86" rx="2" />
+  <g transform="translate(365,165)">
+    <rect class="box" x="0" y="0" width="220" height="86" rx="2" />
     <circle class="icon" cx="48" cy="43" r="22" />
     <path class="icon" d="M 32 43 H 64 M 48 27 V 59" />
-    <text x="125" y="36" text-anchor="middle" class="box-title">Ingestion</text>
-    <text x="125" y="62" text-anchor="middle" class="box-sub">data_loader.py</text>
+    <text x="96" y="36" text-anchor="start" class="box-title">Ingestion</text>
+    <text x="96" y="62" text-anchor="start" class="box-sub">data_loader.py</text>
   </g>
 
   <g transform="translate(235,300)">
-    <rect class="box" x="0" y="0" width="190" height="86" rx="2" />
+    <rect class="box" x="0" y="0" width="240" height="86" rx="2" />
     <path class="icon" d="M 30 23 H 66 M 30 43 H 66 M 30 63 H 66" />
     <circle class="icon-fill" cx="75" cy="23" r="3" />
     <circle class="icon-fill" cx="75" cy="43" r="3" />
     <circle class="icon-fill" cx="75" cy="63" r="3" />
-    <text x="129" y="36" text-anchor="middle" class="box-title">Preprocess</text>
-    <text x="129" y="62" text-anchor="middle" class="box-sub">clean, encode, scale</text>
+    <text x="104" y="36" text-anchor="start" class="box-title">Preprocess</text>
+    <text x="104" y="62" text-anchor="start" class="box-sub">clean, encode, scale</text>
   </g>
 
   <g transform="translate(235,435)">
-    <rect class="box" x="0" y="0" width="190" height="86" rx="2" />
+    <rect class="box" x="0" y="0" width="240" height="86" rx="2" />
     <polyline class="icon" points="30,62 45,48 60,54 78,30" />
     <path class="icon" d="M 30 66 H 82 M 30 22 V 66" />
-    <text x="130" y="36" text-anchor="middle" class="box-title">Features</text>
-    <text x="130" y="62" text-anchor="middle" class="box-sub">rolling form, targets</text>
+    <text x="104" y="36" text-anchor="start" class="box-title">Features</text>
+    <text x="104" y="62" text-anchor="start" class="box-sub">rolling form, targets</text>
   </g>
 
   <g transform="translate(235,570)">
-    <rect class="box" x="0" y="0" width="190" height="86" rx="2" />
+    <rect class="box" x="0" y="0" width="240" height="86" rx="2" />
     <circle class="icon" cx="48" cy="43" r="23" />
     <path class="icon" d="M 48 20 V 43 L 65 56" />
-    <text x="129" y="32" text-anchor="middle" class="box-title">Train Models</text>
-    <text x="129" y="58" text-anchor="middle" class="box-sub">clf, reg, cluster</text>
+    <text x="104" y="32" text-anchor="start" class="box-title">Train Models</text>
+    <text x="104" y="58" text-anchor="start" class="box-sub">clf, reg, cluster</text>
   </g>
 
-  <g transform="translate(455,570)">
+  <g transform="translate(500,570)">
     <rect class="box" x="0" y="0" width="110" height="86" rx="2" />
     <path class="icon" d="M 30 25 H 80 V 64 H 30 Z" />
     <path class="icon" d="M 38 34 H 72 M 38 44 H 72 M 38 54 H 60" />
@@ -95,43 +95,43 @@
   </g>
 
   <!-- Application runtime boxes -->
-  <g transform="translate(710,165)">
-    <rect class="box" x="0" y="0" width="210" height="86" rx="2" />
+  <g transform="translate(690,165)">
+    <rect class="box" x="0" y="0" width="250" height="86" rx="2" />
     <path class="icon" d="M 28 62 V 34 L 50 20 L 72 34 V 62 Z" />
     <path class="icon" d="M 38 62 V 44 H 62 V 62" />
-    <text x="142" y="32" text-anchor="middle" class="box-title">2025 Context</text>
-    <text x="142" y="58" text-anchor="middle" class="box-sub">grid, teams, circuits</text>
+    <text x="100" y="32" text-anchor="start" class="box-title">2025 Context</text>
+    <text x="100" y="58" text-anchor="start" class="box-sub">grid, teams, circuits</text>
   </g>
 
-  <g transform="translate(960,165)">
-    <rect class="box" x="0" y="0" width="210" height="86" rx="2" />
+  <g transform="translate(970,165)">
+    <rect class="box" x="0" y="0" width="250" height="86" rx="2" />
     <circle class="icon" cx="46" cy="43" r="24" />
     <path class="icon" d="M 30 43 H 62 M 46 27 V 59" />
-    <text x="142" y="32" text-anchor="middle" class="box-title">Prediction</text>
-    <text x="142" y="58" text-anchor="middle" class="box-sub">predictor.py</text>
+    <text x="100" y="32" text-anchor="start" class="box-title">Prediction</text>
+    <text x="100" y="58" text-anchor="start" class="box-sub">predictor.py</text>
   </g>
 
-  <g transform="translate(775,340)">
-    <rect class="box" x="0" y="0" width="210" height="86" rx="2" />
+  <g transform="translate(755,340)">
+    <rect class="box" x="0" y="0" width="240" height="86" rx="2" />
     <rect class="icon" x="24" y="24" width="48" height="38" />
     <path class="icon" d="M 32 52 L 44 39 L 54 47 L 66 32" />
-    <text x="144" y="32" text-anchor="middle" class="box-title">Simulation</text>
-    <text x="144" y="58" text-anchor="middle" class="box-sub">Monte Carlo</text>
+    <text x="100" y="32" text-anchor="start" class="box-title">Simulation</text>
+    <text x="100" y="58" text-anchor="start" class="box-sub">Monte Carlo</text>
   </g>
 
   <g transform="translate(1030,340)">
-    <rect class="box" x="0" y="0" width="150" height="86" rx="2" />
+    <rect class="box" x="0" y="0" width="190" height="86" rx="2" />
     <path class="icon" d="M 28 27 H 62 V 39 H 28 Z M 28 49 H 62 V 61 H 28 Z" />
-    <text x="105" y="32" text-anchor="middle" class="box-title">Strategy</text>
-    <text x="105" y="58" text-anchor="middle" class="box-sub">pit + tyres</text>
+    <text x="92" y="32" text-anchor="start" class="box-title">Strategy</text>
+    <text x="92" y="58" text-anchor="start" class="box-sub">pit + tyres</text>
   </g>
 
   <g transform="translate(850,555)">
-    <rect class="box" x="0" y="0" width="260" height="96" rx="2" />
+    <rect class="box" x="0" y="0" width="330" height="96" rx="2" />
     <rect class="icon" x="28" y="24" width="54" height="44" />
     <path class="icon" d="M 38 36 H 72 M 38 48 H 72 M 38 60 H 58" />
-    <text x="170" y="36" text-anchor="middle" class="box-title">Streamlit Dashboard</text>
-    <text x="170" y="64" text-anchor="middle" class="box-sub">prediction, simulation, strategy</text>
+    <text x="104" y="36" text-anchor="start" class="box-title">Streamlit Dashboard</text>
+    <text x="104" y="64" text-anchor="start" class="box-sub">prediction, simulation, strategy</text>
   </g>
 
   <!-- MLOps boxes -->
@@ -172,26 +172,26 @@
   </g>
 
   <!-- Arrows -->
-  <path class="arrow" d="M 305 208 H 355" />
-  <path class="arrow" d="M 450 251 V 295 H 330 V 300" />
-  <path class="arrow" d="M 330 386 V 435" />
-  <path class="arrow" d="M 330 521 V 570" />
-  <path class="arrow" d="M 425 613 H 455" />
+  <path class="arrow" d="M 325 208 H 365" />
+  <path class="arrow" d="M 475 251 V 292 H 355 V 300" />
+  <path class="arrow" d="M 355 386 V 435" />
+  <path class="arrow" d="M 355 521 V 570" />
+  <path class="arrow" d="M 475 613 H 500" />
 
-  <path class="arrow" d="M 565 613 H 645 V 208 H 960" />
-  <path class="arrow" d="M 920 208 H 960" />
-  <path class="arrow" d="M 1065 251 V 340" />
-  <path class="arrow" d="M 1065 251 V 300 H 880 V 340" />
-  <path class="arrow" d="M 880 426 V 555" />
-  <path class="arrow" d="M 1105 426 V 555" />
-  <path class="arrow" d="M 1065 251 V 555" />
+  <path class="arrow" d="M 610 613 H 635 V 145 H 1095 V 165" />
+  <path class="arrow" d="M 940 208 H 970" />
+  <path class="arrow" d="M 1095 251 V 330 H 1125 V 340" />
+  <path class="arrow" d="M 1095 251 V 300 H 875 V 340" />
+  <path class="arrow" d="M 875 426 V 555" />
+  <path class="arrow" d="M 1125 426 V 555" />
+  <path class="arrow" d="M 970 238 H 955 V 280 H 725 V 603 H 850" />
 
   <path class="arrow" d="M 1410 241 V 285" />
-  <path class="arrow" d="M 1320 323 H 620 V 208 H 545" />
-  <path class="arrow" d="M 425 478 H 1280 V 463 H 1320" />
+  <path class="arrow" d="M 1320 323 H 625 V 208 H 585" />
+  <path class="arrow" d="M 475 478 H 1280 V 463 H 1320" />
   <path class="arrow" d="M 1410 501 V 545" />
 
   <path class="arrow-thin" d="M 225 785 V 760 H 850 V 651" />
   <path class="arrow-thin" d="M 480 785 V 742 H 850 V 651" />
-  <path class="arrow-thin" d="M 800 790 V 690 H 980 V 651" />
+  <path class="arrow-thin" d="M 800 790 V 690 H 1015 V 651" />
 </svg>
