@@ -43,6 +43,25 @@ WEATHER_ADJUSTMENTS = {
     "Heavy Rain":   {"stops_adjust": 0,  "compound_note": "Full Wet tyres required. Avoid slick compounds entirely."},
 }
 
+VALID_WEATHER = tuple(WEATHER_ADJUSTMENTS)
+VALID_COMPOUNDS = tuple(COMPOUND_DEG)
+
+
+def _validate_inputs(grid_position: int, weather: str, starting_compound: str) -> None:
+    """Reject invalid race parameters before building a strategy."""
+    if isinstance(grid_position, bool) or not isinstance(grid_position, int):
+        raise TypeError("grid_position must be an integer between 1 and 20")
+    if not 1 <= grid_position <= 20:
+        raise ValueError("grid_position must be between 1 and 20")
+    if weather not in VALID_WEATHER:
+        raise ValueError(
+            f"weather must be one of: {', '.join(VALID_WEATHER)}"
+        )
+    if starting_compound not in VALID_COMPOUNDS:
+        raise ValueError(
+            f"starting_compound must be one of: {', '.join(VALID_COMPOUNDS)}"
+        )
+
 CIRCUIT_STRATEGY_NOTES = {
     "monaco":       "Monaco is the ultimate undercut circuit. No real overtaking — pit before lap 25 at all costs. Track position is everything here.",
     "monza":        "Monza is a low-degradation temple of speed. One-stop on Hard tyres is optimal. Long straights mean DRS overtakes are possible.",
@@ -126,6 +145,8 @@ def recommend(
     Returns a rich dict with primary strategy, alternatives, pit windows,
     risk ratings, safety car advice, and undercut analysis.
     """
+    _validate_inputs(grid_position, weather, starting_compound)
+
     circuit_data = CIRCUIT_DATA_MAP.get(circuit_name, {})
     circuit_ref  = circuit_data.get("ref", "bahrain")
     total_laps   = circuit_data.get("laps", 57)
