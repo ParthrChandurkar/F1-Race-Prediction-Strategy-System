@@ -1,0 +1,29 @@
+# Python bytecode and tooling caches
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Local environments
+.venv/
+venv/
+env/
+
+# Editors and operating systems
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Local secrets and runtime files
+.env
+.env.*
+!.env.example
+*.log
+
+# Streamlit user configuration
+.streamlit/secrets.toml
