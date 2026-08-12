@@ -43,6 +43,33 @@ WEATHER_ADJUSTMENTS = {
     "Heavy Rain":   {"stops_adjust": 0,  "compound_note": "Full Wet tyres required. Avoid slick compounds entirely."},
 }
 
+WET_WEATHER_STRATEGIES = {
+    "Light Rain": {
+        1: [
+            {"name": "Crossover: I → M", "compounds": ["Intermediate", "Medium"], "risk": "Medium"},
+        ],
+        2: [
+            {"name": "Mixed: I → M → H", "compounds": ["Intermediate", "Medium", "Hard"], "risk": "Medium"},
+            {"name": "Changing Track: I → I → M", "compounds": ["Intermediate", "Intermediate", "Medium"], "risk": "High"},
+        ],
+        3: [
+            {"name": "Variable Weather: I → I → M → H", "compounds": ["Intermediate", "Intermediate", "Medium", "Hard"], "risk": "High"},
+        ],
+    },
+    "Heavy Rain": {
+        1: [
+            {"name": "Wet Crossover: W → I", "compounds": ["Wet", "Intermediate"], "risk": "High"},
+        ],
+        2: [
+            {"name": "Full Wet: W → W → W", "compounds": ["Wet", "Wet", "Wet"], "risk": "Low"},
+            {"name": "Drying Race: W → I → M", "compounds": ["Wet", "Intermediate", "Medium"], "risk": "High"},
+        ],
+        3: [
+            {"name": "Extreme Weather: W → W → I → M", "compounds": ["Wet", "Wet", "Intermediate", "Medium"], "risk": "High"},
+        ],
+    },
+}
+
 VALID_WEATHER = tuple(WEATHER_ADJUSTMENTS)
 VALID_COMPOUNDS = tuple(COMPOUND_DEG)
 
@@ -110,15 +137,62 @@ def _get_pit_windows(total_laps: int, n_stops: int, compounds: list[str]) -> lis
     return windows
 
 
-def _pace_loss(compounds: list[str], windows: list[dict], total_laps: int) -> float:
-    """Rough total pace loss estimate in seconds."""
-    pit_time = 22.0
-    total = len(windows) * pit_time
-    for c in compounds:
-        deg = COMPOUND_DEG.get(c, COMPOUND_DEG["Medium"])
-        # degradation penalty per lap over peak
-        total += deg["pace_delta"] * 3
+def _pace_loss(
+    compounds: list[str],
+    windows: list[dict],
+    total_laps: int,
+    pit_loss_seconds: float = 22.0,
+) -> float:
+    """Estimate strategy time loss from pit stops, tyre pace, and degradation."""
+    boundaries = [0, *[window["optimal_lap"] for window in windows], total_laps]
+    total = len(windows) * pit_loss_seconds
+
+    for index, compound in enumerate(compounds):
+        stint_laps = max(0, boundaries[index + 1] - boundaries[index])
+        tyre = COMPOUND_DEG.get(compound, COMPOUND_DEG["Medium"])
+        total += stint_laps * tyre["pace_delta"]
+        laps_over_peak = max(0, stint_laps - tyre["laps_peak"])
+        total += 0.04 * laps_over_peak**2
+
     return round(total, 1)
+
+
+def _strategy_comparison(
+    primary: dict,
+    alternatives: list[dict],
+    total_laps: int,
+    pit_loss_seconds: float,
+) -> list[dict]:
+    """Build comparable time-loss estimates for the recommended strategies."""
+    unique_options = []
+    seen = set()
+    for option in [primary, *alternatives]:
+        key = tuple(option["compounds"])
+        if key not in seen:
+            unique_options.append(option)
+            seen.add(key)
+
+    comparison = []
+    for option in unique_options:
+        stops = len(option["compounds"]) - 1
+        windows = _get_pit_windows(total_laps, stops, option["compounds"])
+        comparison.append({
+            "name": option["name"],
+            "compounds": option["compounds"],
+            "stops": stops,
+            "risk": option["risk"],
+            "estimated_loss_seconds": _pace_loss(
+                option["compounds"], windows, total_laps, pit_loss_seconds
+            ),
+            "recommended": option is primary,
+        })
+
+    fastest = min(row["estimated_loss_seconds"] for row in comparison)
+    for row in comparison:
+        row["delta_to_fastest_seconds"] = round(
+            row["estimated_loss_seconds"] - fastest, 1
+        )
+    return comparison
 
 
 def _undercut_opportunity(circuit_ref: str) -> str:
@@ -184,17 +258,30 @@ def recommend(
     recommended_stops = max(1, min(3, recommended_stops))
 
     # Pick primary strategy
-    options = STRATEGIES.get(recommended_stops, STRATEGIES[2])
-    if starting_compound in ("Soft", "Medium", "Hard"):
+    strategy_catalogue = WET_WEATHER_STRATEGIES.get(weather, STRATEGIES)
+    options = strategy_catalogue.get(recommended_stops, strategy_catalogue[2])
+    if weather not in WET_WEATHER_STRATEGIES and starting_compound in ("Soft", "Medium", "Hard"):
         # prefer options starting with user's compound
         matching = [o for o in options if o["compounds"][0] == starting_compound]
         primary = matching[0] if matching else options[0]
+    elif weather in WET_WEATHER_STRATEGIES:
+        safe_compounds = ("Wet", "Intermediate")
+        matching = [o for o in options if o["compounds"][0] == starting_compound]
+        primary = matching[0] if starting_compound in safe_compounds and matching else options[0]
     else:
         primary = options[0]
 
-    # Alternative strategies (different stop counts)
+    # Alternative strategies (different stop counts and weather scenarios)
     alt_stops = 1 if recommended_stops == 2 else 2
-    alternatives = STRATEGIES.get(alt_stops, STRATEGIES[1])
+    alternatives = [
+        option
+        for stop_options in strategy_catalogue.values()
+        for option in stop_options
+        if option is not primary
+    ]
+    alternatives.sort(
+        key=lambda option: abs((len(option["compounds"]) - 1) - alt_stops)
+    )
 
     # Pit windows
     pit_windows = _get_pit_windows(total_laps, recommended_stops, primary["compounds"])
@@ -211,7 +298,12 @@ def recommend(
     undercut = _undercut_opportunity(circuit_ref)
 
     # Pace loss estimate
-    pace_loss = _pace_loss(primary["compounds"], pit_windows, total_laps)
+    pace_loss = _pace_loss(
+        primary["compounds"], pit_windows, total_laps, pit_loss_secs
+    )
+    strategy_comparison = _strategy_comparison(
+        primary, alternatives, total_laps, pit_loss_secs
+    )
 
     # Circuit note
     circuit_note_key = circuit_ref if circuit_ref in CIRCUIT_STRATEGY_NOTES else "default"
@@ -239,6 +331,7 @@ def recommend(
         "overtaking_ease":     overtaking,
         "pit_loss_seconds":    pit_loss_secs,
         "pace_loss_estimate":  pace_loss,
+        "strategy_comparison": strategy_comparison,
         "weather_note":        weather_info["compound_note"],
         "grid_note":           grid_note,
         "circuit_note":        circuit_note,
