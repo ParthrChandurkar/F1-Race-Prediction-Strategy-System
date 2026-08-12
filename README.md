@@ -1,14 +1,28 @@
-# F1 Race Prediction & Strategy System - 2025 Season
+# F1 Race Prediction & Strategy System
 
-ML-powered Formula 1 race prediction system with a Streamlit dashboard, trained
-scikit-learn models, Monte Carlo race simulation, tyre strategy recommendations,
-and a DVC-based MLOps workflow.
+<p align="center">
+  <strong>Predict race outcomes. Simulate the grid. Build weather-aware pit strategies.</strong>
+</p>
+
+<p align="center">
+  <a href="https://github.com/ParthrChandurkar/F1-Race-Prediction-Strategy-System/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/ParthrChandurkar/F1-Race-Prediction-Strategy-System/actions/workflows/ci.yml/badge.svg"></a>
+  <img alt="Python 3.11" src="https://img.shields.io/badge/Python-3.11-3776AB?logo=python&logoColor=white">
+  <img alt="Streamlit" src="https://img.shields.io/badge/UI-Streamlit-FF4B4B?logo=streamlit&logoColor=white">
+  <img alt="DVC" src="https://img.shields.io/badge/MLOps-DVC-945DD6?logo=dvc&logoColor=white">
+</p>
+
+An end-to-end Formula 1 analytics application that combines trained
+scikit-learn models, Monte Carlo simulation, circuit characteristics, and tyre
+degradation rules in an interactive Streamlit dashboard. The bundled race
+configuration targets the 2025 season.
 
 ---
 
 ## Table of Contents
 
 - [Project Overview](#project-overview)
+- [Quick Start](#quick-start)
+- [Weather-Aware Strategy](#weather-aware-strategy)
 - [Architecture](#architecture)
 - [Dataset](#dataset)
 - [Folder Structure](#folder-structure)
@@ -36,7 +50,8 @@ learning models that predict future 2025 race outcomes.
 - Predicts finishing order, Top 10 probability, podium probability, and win probability for the 2025 grid.
 - Uses Random Forest classification and Ridge regression as the main future-race prediction stack.
 - Runs Monte Carlo race simulations with win, podium, Top 10, DNF, and average-finish probabilities.
-- Recommends tyre compounds, stop counts, pit windows, safety-car responses, and undercut strategy.
+- Recommends weather-safe tyre compounds, stop counts, pit windows, safety-car responses, and undercut strategy.
+- Compares viable plans using circuit-specific pit loss and tyre degradation, then exports the selected pit plan to CSV.
 - Provides driver, team, feature, model-performance, and historical-analysis dashboard pages.
 - Supports both one-shot training and a reproducible DVC pipeline.
 
@@ -44,6 +59,40 @@ learning models that predict future 2025 race outcomes.
 
 Hamilton at Ferrari, Antonelli at Mercedes, Sainz at Williams, Lawson at Racing
 Bulls, Doohan at Alpine, and 24 configured circuits.
+
+## Quick Start
+
+```bash
+git clone https://github.com/ParthrChandurkar/F1-Race-Prediction-Strategy-System.git
+cd F1-Race-Prediction-Strategy-System
+python -m venv venv
+```
+
+Activate the environment (`.\venv\Scripts\Activate.ps1` on Windows or
+`source venv/bin/activate` on macOS/Linux), then run:
+
+```bash
+pip install -r requirements.txt
+streamlit run app.py
+```
+
+Open <http://localhost:8501>. The checked-in model artifacts support dashboard
+inference immediately; raw CSV files are only required when retraining.
+
+## Weather-Aware Strategy
+
+The Strategy Centre now changes its compound plan based on the forecast instead
+of merely displaying a weather warning:
+
+| Forecast | Strategy behavior |
+|---|---|
+| Dry / Cloudy | Evaluates Soft, Medium, and Hard one-to-three-stop plans |
+| Light Rain | Starts on Intermediates and evaluates crossover plans as the track dries |
+| Heavy Rain | Prioritizes Full Wet stints with Wet-to-Intermediate crossover alternatives |
+
+Every recommendation includes pit windows, risk, Safety Car guidance, undercut
+potential, estimated time loss, and delta to the fastest simulated plan. Use
+**Download Pit Plan (CSV)** to take the stop schedule out of the dashboard.
 
 ---
 
@@ -249,7 +298,7 @@ Open: <http://localhost:8501>
 | Race Prediction | Predicts full-grid finishing order, Top 10 probability, podium probability, and win probability for a selected circuit. |
 | Feature Analysis | Explores qualifying/grid impact and feature contribution patterns. |
 | Race Simulation | Runs Monte Carlo simulations using prediction probabilities, DNF risk, and circuit overtaking profile. |
-| Strategy Centre | Recommends stop count, tyre compounds, pit windows, safety-car response, and undercut approach. |
+| Strategy Centre | Builds weather-aware pit plans, compares estimated losses, and exports the stop schedule to CSV. |
 | Driver Analysis | Shows historical driver statistics, form, circuit performance, and skill comparison. |
 | Team Analysis | Shows constructor trends, driver stats, and 2025 lineup comparisons. |
 | Model Performance | Displays model metrics, confusion matrices, regression scores, and feature importance. |
