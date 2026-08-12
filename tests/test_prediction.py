@@ -122,3 +122,47 @@ def test_strategy_pit_windows_list():
     result = recommend("silverstone", grid_position=5)
     assert isinstance(result["pit_windows"], list)
     assert len(result["pit_windows"]) >= 1
+
+
+@pytest.mark.parametrize(
+    ("weather", "expected_first_compound"),
+    [("Light Rain", "Intermediate"), ("Heavy Rain", "Wet")],
+)
+def test_strategy_uses_weather_tyres(weather, expected_first_compound):
+    from src.strategy import recommend
+
+    result = recommend(
+        "British Grand Prix",
+        grid_position=5,
+        weather=weather,
+        starting_compound="Medium",
+    )
+
+    assert result["primary_strategy"]["compounds"][0] == expected_first_compound
+
+
+def test_strategy_comparison_has_time_deltas():
+    from src.strategy import recommend
+
+    result = recommend("Italian Grand Prix", grid_position=4)
+    comparison = result["strategy_comparison"]
+
+    assert len(comparison) >= 2
+    assert sum(row["recommended"] for row in comparison) == 1
+    assert min(row["delta_to_fastest_seconds"] for row in comparison) == 0.0
+    assert all(row["estimated_loss_seconds"] > 0 for row in comparison)
+
+
+@pytest.mark.parametrize("grid_position", [0, 21])
+def test_strategy_rejects_invalid_grid_positions(grid_position):
+    from src.strategy import recommend
+
+    with pytest.raises(ValueError, match="between 1 and 20"):
+        recommend("Monaco Grand Prix", grid_position=grid_position)
+
+
+def test_strategy_rejects_unknown_weather():
+    from src.strategy import recommend
+
+    with pytest.raises(ValueError, match="weather must be one of"):
+        recommend("Monaco Grand Prix", grid_position=3, weather="Snow")
