@@ -810,6 +810,45 @@ elif page == "🛞  Strategy Centre":
                     <span class="{arc}" style="font-size:.75rem">{alt['risk']} risk</span>
                 </div>""", unsafe_allow_html=True)
 
+            # Compare every viable strategy on the same circuit-specific model.
+            st.markdown("<div class='sh'>STRATEGY COMPARISON</div>", unsafe_allow_html=True)
+            comparison_df = pd.DataFrame(rec["strategy_comparison"])
+            comparison_df["Strategy"] = comparison_df.apply(
+                lambda row: f"{'★ ' if row['recommended'] else ''}{row['name']}", axis=1
+            )
+            comparison_df["Tyres"] = comparison_df["compounds"].apply(
+                lambda compounds: " → ".join(compounds)
+            )
+            comparison_df["Estimated Loss"] = comparison_df[
+                "estimated_loss_seconds"
+            ].apply(lambda seconds: f"{seconds:.1f}s")
+            comparison_df["Delta"] = comparison_df[
+                "delta_to_fastest_seconds"
+            ].apply(lambda seconds: f"+{seconds:.1f}s" if seconds else "FASTEST")
+            st.dataframe(
+                comparison_df[["Strategy", "Tyres", "stops", "risk", "Estimated Loss", "Delta"]]
+                .rename(columns={"stops": "Stops", "risk": "Risk"}),
+                use_container_width=True,
+                hide_index=True,
+            )
+
+            export_rows = pd.DataFrame(rec["pit_windows"]).rename(columns={
+                "stop": "Stop",
+                "optimal_lap": "Optimal Lap",
+                "window": "Pit Window",
+                "from": "From Tyre",
+                "to": "To Tyre",
+            })
+            export_rows.insert(0, "Circuit", rec["circuit_name"])
+            export_rows.insert(1, "Driver", rec["driver_name"])
+            st.download_button(
+                "DOWNLOAD PIT PLAN (CSV)",
+                data=export_rows.to_csv(index=False).encode("utf-8"),
+                file_name=f"{rec['circuit_ref']}_pit_plan.csv",
+                mime="text/csv",
+                use_container_width=True,
+            )
+
             # Tyre degradation chart
             st.markdown("<div class='sh'>TYRE DEGRADATION MODEL</div>", unsafe_allow_html=True)
             laps_x = list(range(0,56))
