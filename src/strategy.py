@@ -140,6 +140,59 @@ def _get_pit_windows(total_laps: int, n_stops: int, compounds: list[str]) -> lis
     return windows
 
 
+def get_live_strategy_status(
+    current_lap: int,
+    total_laps: int,
+    pit_windows: list[dict],
+    completed_stops: int = 0,
+) -> dict:
+    """Return the next race-engineer instruction for the current lap."""
+    if isinstance(current_lap, bool) or not isinstance(current_lap, int):
+        raise TypeError("current_lap must be an integer")
+    if not 0 <= current_lap <= total_laps:
+        raise ValueError(f"current_lap must be between 0 and {total_laps}")
+    if not 0 <= completed_stops <= len(pit_windows):
+        raise ValueError("completed_stops is outside the strategy stop count")
+
+    if completed_stops == len(pit_windows):
+        return {
+            "status": "COMPLETE",
+            "instruction": "All planned stops are complete. Manage tyres to the flag.",
+            "next_stop": None,
+            "target_compound": None,
+            "laps_to_window": None,
+        }
+
+    next_stop = pit_windows[completed_stops]
+    laps_to_window = next_stop["window_start"] - current_lap
+    target = next_stop["to"]
+
+    if current_lap < next_stop["window_start"]:
+        status = "PREPARE" if laps_to_window <= 3 else "HOLD"
+        instruction = (
+            f"Prepare {target} tyres; pit window opens in {laps_to_window} lap"
+            f"{'s' if laps_to_window != 1 else ''}."
+        )
+    elif current_lap <= next_stop["window_end"]:
+        status = "BOX" if current_lap >= next_stop["optimal_lap"] else "WINDOW_OPEN"
+        instruction = (
+            f"Box this lap for {target}."
+            if status == "BOX"
+            else f"Pit window is open for {target}; target lap {next_stop['optimal_lap']}."
+        )
+    else:
+        status = "OVERDUE"
+        instruction = f"Planned stop {next_stop['stop']} is overdue. Box for {target}."
+
+    return {
+        "status": status,
+        "instruction": instruction,
+        "next_stop": next_stop["stop"],
+        "target_compound": target,
+        "laps_to_window": max(0, laps_to_window),
+    }
+
+
 def _pace_loss(
     compounds: list[str],
     windows: list[dict],
