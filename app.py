@@ -779,6 +779,14 @@ elif page == "🛞  Strategy Centre":
                             letter-spacing:2px">LIVE ENGINEER · LAP {rec['current_lap']} · {live['status']}</div>
                 <div style="font-size:.92rem;color:#eee;margin-top:5px">{live['instruction']}</div>
             </div>""", unsafe_allow_html=True)
+            st.progress(
+                live["race_progress_percent"] / 100,
+                text=f"Race progress: {live['race_progress_percent']:.1f}%",
+            )
+            l1, l2, l3 = st.columns(3)
+            l1.metric("Current Tyre", live["current_compound"] or "N/A")
+            l2.metric("Laps Remaining", live["laps_remaining"])
+            l3.metric("Next Stop", live["next_stop"] or "Complete")
 
             # Pit windows
             st.markdown("<div class='sh'>PIT STOP WINDOWS</div>", unsafe_allow_html=True)
