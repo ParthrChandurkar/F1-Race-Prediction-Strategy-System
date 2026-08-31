@@ -39,6 +39,7 @@ live_plan = recommend(
 
 print(live_plan["live_status"]["status"])
 print(live_plan["live_status"]["instruction"])
+print(live_plan["live_status"]["race_progress_percent"])
 ```
 
 The status progresses through these states:
@@ -54,6 +55,11 @@ The status progresses through these states:
 
 `current_lap` must be between zero and the circuit race distance.
 `completed_stops` cannot exceed the recommendation's planned stop count.
+
+The live payload also exposes `current_compound`, `target_compound`,
+`laps_to_window`, `laps_remaining`, and `race_progress_percent`. The dashboard
+shows these values beside its progress bar and includes the engineer status in
+the downloadable CSV pit plan.
 
 ## Important limitation
 

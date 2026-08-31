@@ -97,7 +97,8 @@ potential, estimated time loss, and delta to the fastest simulated plan. Use
 During a race, set **Current Race Lap** and **Stops Already Completed** to get a
 live engineer call: hold, prepare, window open, box, overdue, or complete. See
 the [strategy engine guide](docs/strategy-engine.md) for Python examples and the
-full status contract.
+full status contract. The dashboard also tracks the current compound, laps
+remaining, and race progress; CSV exports preserve the live engineer call.
 
 ---
 
