@@ -109,16 +109,9 @@ jobs:
           print(f'dvc.yaml valid — {len(stages)} stages, no duplicate outputs.')
           "
 
-      - name: Run simulator unit tests (no CSV / model files needed)
+      - name: Run simulator and strategy unit tests
         run: |
-          pytest tests/test_prediction.py::test_simulator_basic \
-                 tests/test_prediction.py::test_simulator_probabilities_valid \
-                 tests/test_prediction.py::test_simulator_positions_unique \
-                 tests/test_prediction.py::test_strategy_returns_dict \
-                 tests/test_prediction.py::test_strategy_valid_pit_count \
-                 tests/test_prediction.py::test_strategy_tyre_string_not_empty \
-                 tests/test_prediction.py::test_strategy_pit_windows_list \
-                 -v --tb=short
+          pytest tests/test_prediction.py -k "simulator or strategy" -v --tb=short
 
       - name: Validate model registry module
         run: |

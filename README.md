@@ -94,6 +94,11 @@ Every recommendation includes pit windows, risk, Safety Car guidance, undercut
 potential, estimated time loss, and delta to the fastest simulated plan. Use
 **Download Pit Plan (CSV)** to take the stop schedule out of the dashboard.
 
+During a race, set **Current Race Lap** and **Stops Already Completed** to get a
+live engineer call: hold, prepare, window open, box, overdue, or complete. See
+the [strategy engine guide](docs/strategy-engine.md) for Python examples and the
+full status contract.
+
 ---
 
 ## Architecture
@@ -192,7 +197,9 @@ f1-ml-project/
 |   `-- test_prediction.py
 |
 |-- docs/
-|   `-- architecture.md
+|   |-- architecture.md
+|   |-- architecture-diagram.svg
+|   `-- strategy-engine.md         Strategy API and live-status guide
 |
 |-- data/
 |   |-- raw/                       Kaggle CSV input files
@@ -298,7 +305,7 @@ Open: <http://localhost:8501>
 | Race Prediction | Predicts full-grid finishing order, Top 10 probability, podium probability, and win probability for a selected circuit. |
 | Feature Analysis | Explores qualifying/grid impact and feature contribution patterns. |
 | Race Simulation | Runs Monte Carlo simulations using prediction probabilities, DNF risk, and circuit overtaking profile. |
-| Strategy Centre | Builds weather-aware pit plans, compares estimated losses, and exports the stop schedule to CSV. |
+| Strategy Centre | Builds weather-aware pit plans, gives live lap-by-lap engineer calls, compares losses, and exports the schedule. |
 | Driver Analysis | Shows historical driver statistics, form, circuit performance, and skill comparison. |
 | Team Analysis | Shows constructor trends, driver stats, and 2025 lineup comparisons. |
 | Model Performance | Displays model metrics, confusion matrices, regression scores, and feature importance. |
