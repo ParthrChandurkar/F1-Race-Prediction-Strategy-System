@@ -166,3 +166,50 @@ def test_strategy_rejects_unknown_weather():
 
     with pytest.raises(ValueError, match="weather must be one of"):
         recommend("Monaco Grand Prix", grid_position=3, weather="Snow")
+
+
+def test_strategy_exposes_structured_window_boundaries():
+    from src.strategy import recommend
+
+    result = recommend("British Grand Prix", grid_position=5)
+    for window in result["pit_windows"]:
+        assert window["window_start"] <= window["optimal_lap"]
+        assert window["optimal_lap"] <= window["window_end"]
+
+
+@pytest.mark.parametrize(
+    ("current_lap", "expected_status"),
+    [(0, "HOLD"), (13, "PREPARE"), (16, "WINDOW_OPEN"), (19, "BOX"), (24, "OVERDUE")],
+)
+def test_live_strategy_status_changes_with_lap(current_lap, expected_status):
+    from src.strategy import recommend
+
+    result = recommend(
+        "Bahrain Grand Prix",
+        grid_position=5,
+        starting_compound="Medium",
+        current_lap=current_lap,
+    )
+
+    assert result["live_status"]["status"] == expected_status
+
+
+def test_live_strategy_marks_plan_complete():
+    from src.strategy import recommend
+
+    result = recommend(
+        "Italian Grand Prix",
+        grid_position=4,
+        current_lap=40,
+        completed_stops=1,
+    )
+
+    assert result["live_status"]["status"] == "COMPLETE"
+    assert result["live_status"]["next_stop"] is None
+
+
+def test_live_strategy_rejects_lap_beyond_race_distance():
+    from src.strategy import recommend
+
+    with pytest.raises(ValueError, match="current_lap must be between"):
+        recommend("Italian Grand Prix", grid_position=4, current_lap=54)
