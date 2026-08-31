@@ -106,31 +106,37 @@ CIRCUIT_STRATEGY_NOTES = {
 def _get_pit_windows(total_laps: int, n_stops: int, compounds: list[str]) -> list[dict]:
     """Calculate optimal pit windows for each stop."""
     windows = []
+
+    def add_window(stop: int, optimal: int, early: int, late: int) -> None:
+        window_start = max(1, optimal - early)
+        window_end = min(total_laps, optimal + late)
+        windows.append({
+            "stop": stop,
+            "optimal_lap": optimal,
+            "window_start": window_start,
+            "window_end": window_end,
+            "window": f"Lap {window_start} – {window_end}",
+            "from": compounds[stop - 1],
+            "to": compounds[stop],
+        })
+
     if n_stops == 1:
         c1 = COMPOUND_DEG[compounds[0]]
         optimal = min(c1["laps_peak"] + 4, int(total_laps * 0.45))
-        windows.append({"stop": 1, "optimal_lap": optimal,
-                        "window": f"Lap {optimal-3} – {optimal+5}",
-                        "from": compounds[0], "to": compounds[1]})
+        add_window(1, optimal, early=3, late=5)
     elif n_stops == 2:
         c1 = COMPOUND_DEG[compounds[0]]
         c2 = COMPOUND_DEG[compounds[1]]
         s1 = min(c1["laps_peak"] + 3, int(total_laps * 0.35))
         s2 = s1 + min(c2["laps_peak"] + 3, int(total_laps * 0.38))
         s2 = min(s2, total_laps - 10)
-        windows.append({"stop": 1, "optimal_lap": s1,
-                        "window": f"Lap {s1-3} – {s1+4}",
-                        "from": compounds[0], "to": compounds[1]})
-        windows.append({"stop": 2, "optimal_lap": s2,
-                        "window": f"Lap {s2-3} – {s2+4}",
-                        "from": compounds[1], "to": compounds[2]})
+        add_window(1, s1, early=3, late=4)
+        add_window(2, s2, early=3, late=4)
     elif n_stops >= 3:
         stint = total_laps // (n_stops + 1)
         for i in range(n_stops):
             lap = stint * (i + 1)
-            windows.append({"stop": i+1, "optimal_lap": lap,
-                            "window": f"Lap {lap-2} – {lap+3}",
-                            "from": compounds[i], "to": compounds[i+1]})
+            add_window(i + 1, lap, early=2, late=3)
     return windows
 
 
