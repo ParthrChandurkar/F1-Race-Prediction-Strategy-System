@@ -269,11 +269,13 @@ def recommend(
     starting_compound: str = "Medium",
     aggressive: bool = False,
     driver_name: str = "",
+    current_lap: int = 0,
+    completed_stops: int = 0,
 ) -> dict:
     """
     Full strategy recommendation.
     Returns a rich dict with primary strategy, alternatives, pit windows,
-    risk ratings, safety car advice, and undercut analysis.
+    risk ratings, safety car advice, undercut analysis, and live pit status.
     """
     _validate_inputs(grid_position, weather, starting_compound)
 
@@ -341,6 +343,12 @@ def recommend(
 
     # Pit windows
     pit_windows = _get_pit_windows(total_laps, recommended_stops, primary["compounds"])
+    live_status = get_live_strategy_status(
+        current_lap=current_lap,
+        total_laps=total_laps,
+        pit_windows=pit_windows,
+        completed_stops=completed_stops,
+    )
 
     # Safety car strategy
     if sc_prob >= 0.55:
@@ -379,6 +387,9 @@ def recommend(
         "primary_strategy":    primary,
         "tyre_strategy":       tyre_strategy,
         "pit_windows":         pit_windows,
+        "current_lap":         current_lap,
+        "completed_stops":     completed_stops,
+        "live_status":         live_status,
         "alternatives":        alternatives,
         "tyre_deg_level":      tyre_deg,
         "sc_probability":      sc_prob,
