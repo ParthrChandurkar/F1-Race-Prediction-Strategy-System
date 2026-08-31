@@ -213,3 +213,34 @@ def test_live_strategy_rejects_lap_beyond_race_distance():
 
     with pytest.raises(ValueError, match="current_lap must be between"):
         recommend("Italian Grand Prix", grid_position=4, current_lap=54)
+
+
+def test_live_strategy_reports_race_progress_and_compound():
+    from src.strategy import recommend
+
+    result = recommend(
+        "Italian Grand Prix",
+        grid_position=4,
+        starting_compound="Medium",
+        current_lap=27,
+    )
+    live = result["live_status"]
+
+    assert live["current_lap"] == 27
+    assert live["laps_remaining"] == 26
+    assert live["race_progress_percent"] == pytest.approx(50.9, abs=0.1)
+    assert live["current_compound"] == "Medium"
+
+
+def test_completed_strategy_reports_final_compound():
+    from src.strategy import recommend
+
+    result = recommend(
+        "Italian Grand Prix",
+        grid_position=4,
+        current_lap=40,
+        completed_stops=1,
+    )
+
+    assert result["live_status"]["current_compound"] == "Hard"
+    assert result["live_status"]["target_compound"] is None
