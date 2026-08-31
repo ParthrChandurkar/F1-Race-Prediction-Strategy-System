@@ -154,11 +154,20 @@ def get_live_strategy_status(
     if not 0 <= completed_stops <= len(pit_windows):
         raise ValueError("completed_stops is outside the strategy stop count")
 
+    race_progress = round((current_lap / total_laps) * 100, 1) if total_laps else 100.0
+    shared_status = {
+        "current_lap": current_lap,
+        "laps_remaining": max(0, total_laps - current_lap),
+        "race_progress_percent": race_progress,
+    }
+
     if completed_stops == len(pit_windows):
         return {
+            **shared_status,
             "status": "COMPLETE",
             "instruction": "All planned stops are complete. Manage tyres to the flag.",
             "next_stop": None,
+            "current_compound": pit_windows[-1]["to"] if pit_windows else None,
             "target_compound": None,
             "laps_to_window": None,
         }
@@ -185,9 +194,11 @@ def get_live_strategy_status(
         instruction = f"Planned stop {next_stop['stop']} is overdue. Box for {target}."
 
     return {
+        **shared_status,
         "status": status,
         "instruction": instruction,
         "next_stop": next_stop["stop"],
+        "current_compound": next_stop["from"],
         "target_compound": target,
         "laps_to_window": max(0, laps_to_window),
     }
