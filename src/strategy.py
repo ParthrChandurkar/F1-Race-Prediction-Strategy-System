@@ -5,9 +5,6 @@ Inputs: circuit, grid position, tyre choice, weather.
 Outputs: full multi-stop strategy with lap windows, risk analysis, alternatives.
 """
 
-import os
-import math
-import pandas as pd
 from src.f1_2024_data import CIRCUIT_CHARACTERISTICS, CIRCUIT_DATA_MAP
 
 COMPOUND_DEG = {
@@ -231,7 +228,7 @@ def recommend(
     overtaking     = char.get("overtaking", "medium")
     pit_loss_secs  = char.get("pit_loss", 22)
 
-    weather_info = WEATHER_ADJUSTMENTS.get(weather, WEATHER_ADJUSTMENTS["Dry"])
+    weather_info = WEATHER_ADJUSTMENTS[weather]
 
     # Determine recommended stop count
     if weather in ("Heavy Rain",):
