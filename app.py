@@ -694,6 +694,9 @@ elif page == "🛞  Strategy Centre":
         weather_st = st.selectbox("Weather Forecast", ["Dry","Cloudy","Light Rain","Heavy Rain"])
         start_comp = st.selectbox("Starting Tyre Compound", ["Soft","Medium","Hard","Intermediate","Wet"])
         aggressive = st.toggle("Aggressive Strategy Mode")
+        race_laps_st = CIRCUIT_DATA_MAP.get(circuit_st, {}).get("laps", 57)
+        current_lap_st = st.slider("Current Race Lap", 0, race_laps_st, 0)
+        completed_stops_st = st.slider("Stops Already Completed", 0, 3, 0)
         strat_btn  = st.button("🛞  BUILD RACE STRATEGY")
 
         team_st = DRIVER_TEAM_2025.get(driver_st,"Ferrari")
@@ -716,9 +719,20 @@ elif page == "🛞  Strategy Centre":
 
     with col2:
         if strat_btn:
+            preview = recommend(circuit_name=circuit_st, grid_position=grid_st,
+                                weather=weather_st, starting_compound=start_comp,
+                                aggressive=aggressive, driver_name=driver_st)
+            completed_stops = min(completed_stops_st, preview["recommended_stops"])
+            if completed_stops != completed_stops_st:
+                st.warning(
+                    f"This is a {preview['recommended_stops']}-stop plan, so completed stops "
+                    f"was adjusted to {completed_stops}."
+                )
             rec = recommend(circuit_name=circuit_st, grid_position=grid_st,
                             weather=weather_st, starting_compound=start_comp,
-                            aggressive=aggressive, driver_name=driver_st)
+                            aggressive=aggressive, driver_name=driver_st,
+                            current_lap=current_lap_st,
+                            completed_stops=completed_stops)
             pri      = rec["primary_strategy"]
             compounds = pri["compounds"]
             risk_css = {"Low":"risk-low","Medium":"risk-medium","High":"risk-high"}.get(pri["risk"],"risk-medium")
@@ -751,6 +765,20 @@ elif page == "🛞  Strategy Centre":
             m2.metric("Race Laps", rec["total_laps"])
             m3.metric("SC Probability", f"{rec['sc_probability']:.0%}")
             m4.metric("Pit Loss", f"{rec['pit_loss_seconds']}s")
+
+            live = rec["live_status"]
+            live_color = {
+                "HOLD": "#777", "PREPARE": "#ffd700", "WINDOW_OPEN": "#00a8ff",
+                "BOX": "#e10600", "OVERDUE": "#ff4b4b", "COMPLETE": "#00c851",
+            }.get(live["status"], "#888")
+            st.markdown(f"""
+            <div style="background:{live_color}12;border:1px solid {live_color}55;
+                        border-left:4px solid {live_color};border-radius:6px;padding:12px 14px;
+                        margin:12px 0">
+                <div style="font-family:Orbitron;font-size:.62rem;color:{live_color};
+                            letter-spacing:2px">LIVE ENGINEER · LAP {rec['current_lap']} · {live['status']}</div>
+                <div style="font-size:.92rem;color:#eee;margin-top:5px">{live['instruction']}</div>
+            </div>""", unsafe_allow_html=True)
 
             # Pit windows
             st.markdown("<div class='sh'>PIT STOP WINDOWS</div>", unsafe_allow_html=True)
