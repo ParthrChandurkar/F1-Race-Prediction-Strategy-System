@@ -871,12 +871,19 @@ elif page == "🛞  Strategy Centre":
             export_rows = pd.DataFrame(rec["pit_windows"]).rename(columns={
                 "stop": "Stop",
                 "optimal_lap": "Optimal Lap",
+                "window_start": "Window Start",
+                "window_end": "Window End",
                 "window": "Pit Window",
                 "from": "From Tyre",
                 "to": "To Tyre",
             })
             export_rows.insert(0, "Circuit", rec["circuit_name"])
             export_rows.insert(1, "Driver", rec["driver_name"])
+            export_rows.insert(2, "Current Lap", rec["current_lap"])
+            export_rows.insert(3, "Completed Stops", rec["completed_stops"])
+            export_rows.insert(4, "Live Status", live["status"])
+            export_rows.insert(5, "Current Tyre", live["current_compound"])
+            export_rows.insert(6, "Engineer Instruction", live["instruction"])
             st.download_button(
                 "DOWNLOAD PIT PLAN (CSV)",
                 data=export_rows.to_csv(index=False).encode("utf-8"),
