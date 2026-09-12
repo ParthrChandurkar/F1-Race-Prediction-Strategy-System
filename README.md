@@ -90,22 +90,40 @@ the models.
 
 ## Quick Start
 
+**Prerequisites:** Git and Python 3.11 or newer.
+
 ```bash
 git clone https://github.com/ParthrChandurkar/F1-Race-Prediction-Strategy-System.git
 cd F1-Race-Prediction-Strategy-System
 python -m venv venv
 ```
 
-Activate the environment (`.\venv\Scripts\Activate.ps1` on Windows or
-`source venv/bin/activate` on macOS/Linux), then run:
+Windows PowerShell:
+
+```powershell
+.\venv\Scripts\Activate.ps1
+python -m pip install -r requirements.txt
+python -m streamlit run app.py
+```
+
+macOS or Linux:
 
 ```bash
-pip install -r requirements.txt
-streamlit run app.py
+source venv/bin/activate
+python -m pip install -r requirements.txt
+python -m streamlit run app.py
 ```
 
 Open <http://localhost:8501>. The checked-in model artifacts support dashboard
-inference immediately; raw CSV files are only required when retraining.
+inference immediately; raw CSV files are only required when retraining. Start
+with **Race Prediction** for model inference or **Strategy Centre** for a tyre
+and pit-stop plan.
+
+To verify the installation:
+
+```bash
+python -m pytest -q
+```
 
 ## Weather-Aware Strategy
 
