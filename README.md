@@ -33,6 +33,7 @@ configuration targets the 2025 season.
 ## Table of Contents
 
 - [Project Overview](#project-overview)
+- [Core Capabilities](#core-capabilities)
 - [Quick Start](#quick-start)
 - [Weather-Aware Strategy](#weather-aware-strategy)
 - [Architecture](#architecture)
@@ -71,6 +72,21 @@ learning models that predict future 2025 race outcomes.
 
 Hamilton at Ferrari, Antonelli at Mercedes, Sainz at Williams, Lawson at Racing
 Bulls, Doohan at Alpine, and 24 configured circuits.
+
+## Core Capabilities
+
+| Capability | Inputs | Output |
+|---|---|---|
+| Race prediction | Driver, constructor, circuit, qualifying and historical form | Finishing position and Top 10 probability |
+| Monte Carlo simulation | Full grid probabilities, seed and circuit overtaking profile | Win, podium, Top 10, DNF and average-finish probabilities |
+| Strategy recommendation | Circuit, grid position, forecast and starting compound | Stop count, tyre sequence, pit windows and alternatives |
+| Live race engineer | Current lap and completed stops | Hold, prepare, box, overdue or complete instruction |
+| Model analysis | Stored metrics and feature importance | Classification, regression and feature-performance views |
+| Reproducible training | Raw CSVs and `params.yaml` | Versioned processed data, trained artifacts and registry metadata |
+
+The dashboard is useful without retraining because trained artifacts are
+included. The DVC workflow is available when you want to reproduce or change
+the models.
 
 ## Quick Start
 
