@@ -50,6 +50,8 @@ configuration targets the 2025 season.
 - [Features Used](#features-used)
 - [CI/CD](#cicd)
 - [Troubleshooting](#troubleshooting)
+- [Limitations](#limitations)
+- [Contributing](#contributing)
 - [Future Scope](#future-scope)
 
 ---
@@ -526,6 +528,33 @@ Main checks:
 | Models not found in app | Run `python src/train_models.py` or `dvc repro` first. |
 | Port 8501 busy | Run `streamlit run app.py --server.port 8502`. |
 | Docker app starts without predictions | Train models first so `models/` contains the required artifacts. |
+
+---
+
+## Limitations
+
+- Predictions are estimates derived from historical data and configured
+  driver, team and circuit ratings; they are not betting or race-control advice.
+- The strategy comparison is relative to the application's tyre-degradation
+  model and does not consume live telemetry, traffic or tyre-temperature data.
+- Safety Cars and DNFs are probabilistic events, so individual simulation runs
+  can differ even when the underlying driver probabilities are unchanged.
+- The bundled constants represent a 2025-style grid and should be updated before
+  using the dashboard for another season.
+
+## Contributing
+
+1. Fork the repository and create a focused feature branch.
+2. Keep data-processing changes reproducible through `params.yaml` and
+   `dvc.yaml` where applicable.
+3. Add or update tests for prediction, simulation or strategy behavior.
+4. Run `python -m pytest -q` and compile changed Python modules before opening a
+   pull request.
+5. Describe the user-visible change and any regenerated model artifacts in the
+   pull request summary.
+
+Bug reports should include the command used, Python version, relevant input
+values and the complete error message.
 
 ---
 
