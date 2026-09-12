@@ -1,7 +1,7 @@
 # F1 Race Prediction & Strategy System
 
 <p align="center">
-  <strong>Predict race outcomes. Simulate the grid. Build weather-aware pit strategies.</strong>
+  <strong>Predict race outcomes · Simulate the grid · Build weather-aware pit strategies</strong>
 </p>
 
 <p align="center">
@@ -9,12 +9,24 @@
   <img alt="Python 3.11" src="https://img.shields.io/badge/Python-3.11-3776AB?logo=python&logoColor=white">
   <img alt="Streamlit" src="https://img.shields.io/badge/UI-Streamlit-FF4B4B?logo=streamlit&logoColor=white">
   <img alt="DVC" src="https://img.shields.io/badge/MLOps-DVC-945DD6?logo=dvc&logoColor=white">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-63%20passing-2EA44F">
+</p>
+
+<p align="center">
+  <a href="#quick-start">Quick Start</a> ·
+  <a href="#ui-pages">Dashboard</a> ·
+  <a href="docs/strategy-engine.md">Strategy API</a> ·
+  <a href="docs/architecture.md">Architecture</a>
 </p>
 
 An end-to-end Formula 1 analytics application that combines trained
 scikit-learn models, Monte Carlo simulation, circuit characteristics, and tyre
 degradation rules in an interactive Streamlit dashboard. The bundled race
 configuration targets the 2025 season.
+
+> Built as a portfolio-ready ML system: data preparation, model training,
+> inference, simulation, strategy analysis, testing, containerization, and
+> reproducible pipeline orchestration live in one repository.
 
 ---
 
