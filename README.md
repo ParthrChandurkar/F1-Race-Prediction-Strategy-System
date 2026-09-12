@@ -35,6 +35,7 @@ configuration targets the 2025 season.
 - [Project Overview](#project-overview)
 - [Core Capabilities](#core-capabilities)
 - [Quick Start](#quick-start)
+- [Example Workflow](#example-workflow)
 - [Weather-Aware Strategy](#weather-aware-strategy)
 - [Architecture](#architecture)
 - [Dataset](#dataset)
@@ -124,6 +125,21 @@ To verify the installation:
 ```bash
 python -m pytest -q
 ```
+
+## Example Workflow
+
+1. Open **Race Prediction** and choose a circuit plus grid assumptions.
+2. Review each driver's predicted finish and Top 10 probability.
+3. Send the grid probabilities to **Race Simulation** to compare win, podium,
+   DNF and average-finish outcomes across repeated races.
+4. Open **Strategy Centre**, select the forecast and starting tyre, then compare
+   pit plans by estimated time loss.
+5. During a simulated race, update the current lap and completed stops to get a
+   live engineer instruction, then export the plan as CSV.
+
+For a reproducible modelling run, edit `params.yaml` and run `dvc repro`. DVC
+executes ingestion, preprocessing, feature engineering, training and evaluation
+in dependency order.
 
 ## Weather-Aware Strategy
 
