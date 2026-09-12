@@ -328,17 +328,33 @@ trusted-host =
 
 ## Running the Project
 
-### Step 1 - Place CSV files
+### Use the bundled models
 
-Copy the required Kaggle CSV files into `data/raw/`.
+The repository includes trained artifacts in `models/`, so you can launch the
+dashboard directly after installing dependencies:
 
-### Step 2 - Train models
+```bash
+python -m streamlit run app.py
+```
+
+Open <http://localhost:8501>. This path is best for exploring predictions,
+simulations, strategy recommendations and model metrics.
+
+### Retrain from raw data
+
+Retraining is optional and requires the eight dataset files listed above.
+
+1. Copy the CSV files into `data/raw/`.
+2. Run the one-shot trainer:
+
 
 ```bash
 python src/train_models.py
 ```
 
-Expected high-level output:
+3. Relaunch Streamlit to load the newly generated artifacts.
+
+Expected training output:
 
 ```text
 [1/6] Loading raw CSVs ...
@@ -349,14 +365,6 @@ Expected high-level output:
 [6/6] Training models ...
 ALL MODELS TRAINED AND SAVED
 ```
-
-### Step 3 - Launch the app
-
-```bash
-streamlit run app.py
-```
-
-Open: <http://localhost:8501>
 
 ---
 
