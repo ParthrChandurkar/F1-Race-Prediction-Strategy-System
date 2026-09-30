@@ -1,568 +1,89 @@
-# F1 Race Prediction & Strategy System
+# F1 Race Prediction and Strategy System
 
-<p align="center">
-  <strong>Predict race outcomes · Simulate the grid · Build weather-aware pit strategies</strong>
-</p>
+An interactive Streamlit application for exploring historical Formula 1 data, predicting race outcomes, running Monte Carlo race simulations, and comparing weather-aware tyre and pit-stop strategies.
 
-<p align="center">
-  <a href="https://github.com/ParthrChandurkar/F1-Race-Prediction-Strategy-System/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/ParthrChandurkar/F1-Race-Prediction-Strategy-System/actions/workflows/ci.yml/badge.svg"></a>
-  <img alt="Python 3.11" src="https://img.shields.io/badge/Python-3.11-3776AB?logo=python&logoColor=white">
-  <img alt="Streamlit" src="https://img.shields.io/badge/UI-Streamlit-FF4B4B?logo=streamlit&logoColor=white">
-  <img alt="DVC" src="https://img.shields.io/badge/MLOps-DVC-945DD6?logo=dvc&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-63%20passing-2EA44F">
-</p>
+## Features
 
-<p align="center">
-  <a href="#quick-start">Quick Start</a> ·
-  <a href="#ui-pages">Dashboard</a> ·
-  <a href="docs/strategy-engine.md">Strategy API</a> ·
-  <a href="docs/architecture.md">Architecture</a>
-</p>
+- Finishing-position and Top 10 prediction using saved scikit-learn artifacts
+- Win, podium, Top 10, DNF, and average-finish estimates from repeated simulations
+- Circuit- and weather-aware tyre strategy comparison
+- Live race-engineer status based on the current lap and completed stops
+- Model metrics, feature importance, driver, team, and historical analysis views
+- Reproducible data and training stages defined in DVC
 
-An end-to-end Formula 1 analytics application that combines trained
-scikit-learn models, Monte Carlo simulation, circuit characteristics, and tyre
-degradation rules in an interactive Streamlit dashboard. The bundled race
-configuration targets the 2025 season.
+## Architecture
 
-> Built as a portfolio-ready ML system: data preparation, model training,
-> inference, simulation, strategy analysis, testing, containerization, and
-> reproducible pipeline orchestration live in one repository.
+`app.py` provides the Streamlit interface. Runtime predictions are implemented in `src/predictor.py`, simulations in `src/simulator.py`, and strategy logic in `src/strategy.py`. Saved encoders, scalers, estimators, metrics, and metadata are stored under `models/`.
 
----
+The training path loads raw Formula 1 CSV files, preprocesses and engineers features, trains several classification and regression candidates, evaluates them, and records model metadata. `dvc.yaml`, `dvc.lock`, and `params.yaml` define the reproducible pipeline. See [`docs/architecture.md`](docs/architecture.md) and [`docs/strategy-engine.md`](docs/strategy-engine.md).
 
-## Table of Contents
+## Tech Stack
 
-- [Project Overview](#project-overview)
-- [Core Capabilities](#core-capabilities)
-- [Quick Start](#quick-start)
-- [Example Workflow](#example-workflow)
-- [Weather-Aware Strategy](#weather-aware-strategy)
-- [Architecture](#architecture)
-- [Dataset](#dataset)
-- [Folder Structure](#folder-structure)
-- [Installation](#installation)
-- [Running the Project](#running-the-project)
-- [UI Pages](#ui-pages)
-- [DVC Pipeline](#dvc-pipeline)
-- [Docker](#docker)
-- [Tests](#tests)
-- [ML Models](#ml-models)
-- [Features Used](#features-used)
-- [CI/CD](#cicd)
-- [Troubleshooting](#troubleshooting)
-- [Limitations](#limitations)
-- [Contributing](#contributing)
-- [Future Scope](#future-scope)
+- Python, pandas, NumPy, and scikit-learn
+- Streamlit and Plotly
+- DVC and YAML-based pipeline parameters
+- pytest
+- Docker and Docker Compose
+- GitHub Actions
 
----
+## Getting Started
 
-## Project Overview
-
-This project uses historical Formula 1 data from 2000-2024 to train machine
-learning models that predict future 2025 race outcomes.
-
-**What it does:**
-
-- Predicts finishing order, Top 10 probability, podium probability, and win probability for the 2025 grid.
-- Uses Random Forest classification and Ridge regression as the main future-race prediction stack.
-- Runs Monte Carlo race simulations with win, podium, Top 10, DNF, and average-finish probabilities.
-- Recommends weather-safe tyre compounds, stop counts, pit windows, safety-car responses, and undercut strategy.
-- Compares viable plans using circuit-specific pit loss and tyre degradation, then exports the selected pit plan to CSV.
-- Provides driver, team, feature, model-performance, and historical-analysis dashboard pages.
-- Supports both one-shot training and a reproducible DVC pipeline.
-
-**Bundled 2025-style grid constants include:**
-
-Hamilton at Ferrari, Antonelli at Mercedes, Sainz at Williams, Lawson at Racing
-Bulls, Doohan at Alpine, and 24 configured circuits.
-
-## Core Capabilities
-
-| Capability | Inputs | Output |
-|---|---|---|
-| Race prediction | Driver, constructor, circuit, qualifying and historical form | Finishing position and Top 10 probability |
-| Monte Carlo simulation | Full grid probabilities, seed and circuit overtaking profile | Win, podium, Top 10, DNF and average-finish probabilities |
-| Strategy recommendation | Circuit, grid position, forecast and starting compound | Stop count, tyre sequence, pit windows and alternatives |
-| Live race engineer | Current lap and completed stops | Hold, prepare, box, overdue or complete instruction |
-| Model analysis | Stored metrics and feature importance | Classification, regression and feature-performance views |
-| Reproducible training | Raw CSVs and `params.yaml` | Versioned processed data, trained artifacts and registry metadata |
-
-The dashboard is useful without retraining because trained artifacts are
-included. The DVC workflow is available when you want to reproduce or change
-the models.
-
-## Quick Start
-
-**Prerequisites:** Git and Python 3.11 or newer.
+Prerequisites: Python 3.11 or newer and pip.
 
 ```bash
-git clone https://github.com/ParthrChandurkar/F1-Race-Prediction-Strategy-System.git
-cd F1-Race-Prediction-Strategy-System
-python -m venv venv
+python -m venv .venv
 ```
 
-Windows PowerShell:
+Activate the environment, install dependencies, and start the application:
 
 ```powershell
-.\venv\Scripts\Activate.ps1
+.\.venv\Scripts\Activate.ps1
 python -m pip install -r requirements.txt
 python -m streamlit run app.py
 ```
 
-macOS or Linux:
+On macOS or Linux, activate with `source .venv/bin/activate`. The application is normally available at `http://localhost:8501`. Checked-in model artifacts support inference without retraining.
+
+## Data and Training
+
+The training pipeline expects the Formula 1 CSV tables listed in `data/raw/PLACE_CSV_FILES_HERE.txt`. The README previously referenced the [Formula 1 World Championship dataset on Kaggle](https://www.kaggle.com/datasets/rohanrao/formula-1-world-championship-1950-2020); verify the dataset license and current file names before downloading.
+
+Reproduce the pipeline with:
 
 ```bash
-source venv/bin/activate
-python -m pip install -r requirements.txt
-python -m streamlit run app.py
+dvc repro
 ```
 
-Open <http://localhost:8501>. The checked-in model artifacts support dashboard
-inference immediately; raw CSV files are only required when retraining. Start
-with **Race Prediction** for model inference or **Strategy Centre** for a tyre
-and pit-stop plan.
+Pipeline outputs are written to `data/processed/`, `models/`, and the local model registry under `mlops/model_registry/`.
 
-To verify the installation:
+## Docker
+
+Run the Streamlit application:
+
+```bash
+docker compose up --build f1-app
+```
+
+Run the optional training service:
+
+```bash
+docker compose --profile train up --build f1-train
+```
+
+The Compose file mounts the data, model, experiment, and registry paths so generated artifacts remain available on the host.
+
+## Testing
 
 ```bash
 python -m pytest -q
 ```
 
-## Example Workflow
-
-1. Open **Race Prediction** and choose a circuit plus grid assumptions.
-2. Review each driver's predicted finish and Top 10 probability.
-3. Send the grid probabilities to **Race Simulation** to compare win, podium,
-   DNF and average-finish outcomes across repeated races.
-4. Open **Strategy Centre**, select the forecast and starting tyre, then compare
-   pit plans by estimated time loss.
-5. During a simulated race, update the current lap and completed stops to get a
-   live engineer instruction, then export the plan as CSV.
-
-For a reproducible modelling run, edit `params.yaml` and run `dvc repro`. DVC
-executes ingestion, preprocessing, feature engineering, training and evaluation
-in dependency order.
-
-## Weather-Aware Strategy
-
-The Strategy Centre now changes its compound plan based on the forecast instead
-of merely displaying a weather warning:
-
-| Forecast | Strategy behavior |
-|---|---|
-| Dry / Cloudy | Evaluates Soft, Medium, and Hard one-to-three-stop plans |
-| Light Rain | Starts on Intermediates and evaluates crossover plans as the track dries |
-| Heavy Rain | Prioritizes Full Wet stints with Wet-to-Intermediate crossover alternatives |
-
-Every recommendation includes pit windows, risk, Safety Car guidance, undercut
-potential, estimated time loss, and delta to the fastest simulated plan. Use
-**Download Pit Plan (CSV)** to take the stop schedule out of the dashboard.
-
-During a race, set **Current Race Lap** and **Stops Already Completed** to get a
-live engineer call: hold, prepare, window open, box, overdue, or complete. See
-the [strategy engine guide](docs/strategy-engine.md) for Python examples and the
-full status contract. The dashboard also tracks the current compound, laps
-remaining, and race progress; CSV exports preserve the live engineer call.
-
----
-
-## Architecture
-
-The system has three main paths:
-
-- **Training path:** raw CSVs are merged, cleaned, encoded, feature engineered, and used to train 9 models.
-- **Inference path:** the Streamlit UI calls prediction, simulation, and strategy modules backed by saved artifacts.
-- **MLOps path:** DVC, params, experiment logs, registry metadata, CI, and Docker keep the workflow reproducible.
-
-<p align="center">
-  <img src="docs/architecture-diagram.svg" alt="F1 Race Prediction and Strategy System architecture diagram" width="100%">
-</p>
-
-### Runtime Flow
-
-1. The user selects a circuit, weather, grid assumptions, and simulation settings in `app.py`.
-2. `src/predictor.py` loads the saved scaler, encoders, Random Forest classifier, and Ridge regressor from `models/`.
-3. `src/f1_2024_data.py` supplies driver/team ratings and circuit metadata for future 2025 predictions.
-4. Predictions feed `src/simulator.py` for Monte Carlo results and `src/strategy.py` for pit/tyre recommendations.
-5. Metrics, feature importance, model artifacts, and processed data are displayed back in the Streamlit UI.
-
-### Training Flow
-
-1. `src/data_loader.py` reads and merges the required Kaggle CSV files.
-2. `src/preprocessing.py` cleans rows, imputes missing values, label-encodes categories, and scales features.
-3. `src/feature_engineering.py` adds rolling form, win-rate, Top 10, Top 3, and grid-delta features.
-4. `src/train_models.py` or `ml_pipeline/train.py` trains classifiers, regressors, and K-Means.
-5. `ml_pipeline/evaluate.py` writes metrics, feature importance, and registers the best classifier.
-
----
-
-## Dataset
-
-Source: <https://www.kaggle.com/datasets/rohanrao/formula-1-world-championship-1950-2020>
-
-Place these required files in `data/raw/`:
-
-```text
-results.csv
-races.csv
-drivers.csv
-constructors.csv
-qualifying.csv
-pit_stops.csv
-lap_times.csv
-circuits.csv
-```
-
-The repository also includes additional raw F1 tables, but the core loader uses
-the eight files listed above.
-
----
-
-## Folder Structure
-
-```text
-f1-ml-project/
-|-- app.py                         Streamlit web app with 8 pages
-|-- requirements.txt               Python dependencies
-|-- params.yaml                    DVC-tracked configuration
-|-- dvc.yaml                       5-stage DVC pipeline
-|-- Dockerfile                     Streamlit container image
-|-- docker-compose.yml             App and optional training services
-|-- Makefile                       Common local commands
-|-- install.ps1 / install.bat      Windows install helpers
-|-- SETUP_WINDOWS.md               Windows setup notes
-|
-|-- src/
-|   |-- f1_2024_data.py            2025 grid, circuits, skill, team ratings
-|   |-- data_loader.py             Loads and merges raw CSV tables
-|   |-- preprocessing.py           Cleans, encodes, scales, selects features
-|   |-- feature_engineering.py     Rolling averages, win rate, targets
-|   |-- train_models.py            One-shot training script
-|   |-- evaluate_models.py         Evaluation report helper
-|   |-- predictor.py               Future race prediction engine
-|   |-- simulator.py               Monte Carlo simulation
-|   `-- strategy.py                Pit stop and tyre strategy engine
-|
-|-- ml_pipeline/
-|   |-- data_ingestion.py          DVC stage 1
-|   |-- preprocessing.py           DVC stage 2
-|   |-- feature_engineering.py     DVC stage 3
-|   |-- train.py                   DVC stage 4
-|   `-- evaluate.py                DVC stage 5
-|
-|-- mlops/
-|   |-- model_registry/
-|   |   |-- register_model.py      Local JSON model registry API
-|   |   `-- registry.json          Registered model metadata
-|   `-- experiments/               Training run logs
-|
-|-- tests/
-|   |-- test_data_loading.py
-|   |-- test_model_files.py
-|   `-- test_prediction.py
-|
-|-- docs/
-|   |-- architecture.md
-|   |-- architecture-diagram.svg
-|   `-- strategy-engine.md         Strategy API and live-status guide
-|
-|-- data/
-|   |-- raw/                       Kaggle CSV input files
-|   `-- processed/                 Generated pipeline outputs
-|
-`-- models/                        Trained models, encoders, metrics, metadata
-```
-
----
-
-## Installation
-
-### Step 1 - Create a virtual environment
-
-```bash
-python -m venv venv
-```
-
-Windows PowerShell:
-
-```powershell
-.\venv\Scripts\Activate.ps1
-```
-
-macOS / Linux:
-
-```bash
-source venv/bin/activate
-```
-
-### Step 2 - Install dependencies
-
-Normal networks:
-
-```bash
-pip install -r requirements.txt
-```
-
-College or corporate networks with SSL issues:
-
-```powershell
-.\install.ps1
-```
-
-Manual trusted-host fallback:
-
-```powershell
-pip install scikit-learn numpy pandas joblib streamlit plotly dvc pyyaml pytest matplotlib seaborn --trusted-host pypi.org --trusted-host files.pythonhosted.org --trusted-host pypi.python.org
-```
-
-Permanent Windows pip SSL workaround:
-
-```ini
-# C:\Users\YourName\pip\pip.ini
-[global]
-trusted-host =
-    pypi.org
-    files.pythonhosted.org
-    pypi.python.org
-```
-
----
-
-## Running the Project
-
-### Use the bundled models
-
-The repository includes trained artifacts in `models/`, so you can launch the
-dashboard directly after installing dependencies:
-
-```bash
-python -m streamlit run app.py
-```
-
-Open <http://localhost:8501>. This path is best for exploring predictions,
-simulations, strategy recommendations and model metrics.
-
-### Retrain from raw data
-
-Retraining is optional and requires the eight dataset files listed above.
-
-1. Copy the CSV files into `data/raw/`.
-2. Run the one-shot trainer:
-
-
-```bash
-python src/train_models.py
-```
-
-3. Relaunch Streamlit to load the newly generated artifacts.
-
-Expected training output:
-
-```text
-[1/6] Loading raw CSVs ...
-[2/6] Cleaning ...
-[3/6] Encoding categoricals ...
-[4/6] Engineering features ...
-[5/6] Splitting train/test ...
-[6/6] Training models ...
-ALL MODELS TRAINED AND SAVED
-```
-
----
-
-## UI Pages
-
-| Page | What it does |
-|---|---|
-| Dashboard | Shows the 2025 driver grid, team ratings, high-level system overview, and core modules. |
-| Race Prediction | Predicts full-grid finishing order, Top 10 probability, podium probability, and win probability for a selected circuit. |
-| Feature Analysis | Explores qualifying/grid impact and feature contribution patterns. |
-| Race Simulation | Runs Monte Carlo simulations using prediction probabilities, DNF risk, and circuit overtaking profile. |
-| Strategy Centre | Builds weather-aware pit plans, gives live lap-by-lap engineer calls, compares losses, and exports the schedule. |
-| Driver Analysis | Shows historical driver statistics, form, circuit performance, and skill comparison. |
-| Team Analysis | Shows constructor trends, driver stats, and 2025 lineup comparisons. |
-| Model Performance | Displays model metrics, confusion matrices, regression scores, and feature importance. |
-
----
-
-## DVC Pipeline
-
-Run the full reproducible ML pipeline:
-
-```bash
-dvc repro
-```
-
-Pipeline stages:
-
-| Stage | Script | Main output |
-|---|---|---|
-| `data_ingestion` | `ml_pipeline/data_ingestion.py` | `data/processed/ingested_master.csv` |
-| `preprocessing` | `ml_pipeline/preprocessing.py` | `data/processed/master.csv` |
-| `feature_engineering` | `ml_pipeline/feature_engineering.py` | `data/processed/featured_master.csv` |
-| `train` | `ml_pipeline/train.py` | model `.pkl` files, encoders, scaler, `meta.json` |
-| `evaluate` | `ml_pipeline/evaluate.py` | `metrics.json`, `feature_importance.json`, registry entry |
-
-Useful commands:
-
-```bash
-dvc init -f
-dvc repro
-dvc status
-```
-
-Change a value in `params.yaml`, then run `dvc repro` to rerun only the affected
-stages.
-
----
-
-## Docker
-
-Build and run the Streamlit app:
-
-```bash
-docker build -t f1-ml-app .
-docker-compose up --build
-```
-
-Open: <http://localhost:8501>
-
-Stop containers:
-
-```bash
-docker-compose down
-```
-
-Optional training profile:
-
-```bash
-docker-compose --profile train up
-```
-
----
-
-## Tests
-
-```bash
-pytest tests/ -v --tb=short
-```
-
-The GitHub Actions workflow also runs syntax checks, selected simulation and
-strategy tests, parameter validation, DVC validation, and model-registry checks.
-
----
-
-## ML Models
-
-### Classification
-
-Predicts whether a driver finishes in the Top 10.
-
-| Model | Artifact |
-|---|---|
-| Random Forest | `models/Random_Forest.pkl` |
-| SVM | `models/SVM.pkl` |
-| Logistic Regression | `models/Logistic_Regression.pkl` |
-| Decision Tree | `models/Decision_Tree.pkl` |
-| Naive Bayes | `models/Naive_Bayes.pkl` |
-
-### Regression
-
-Predicts finishing position from 1-20.
-
-| Model | Artifact |
-|---|---|
-| Ridge Regression | `models/Ridge_Regression.pkl` |
-| Linear Regression | `models/Linear_Regression.pkl` |
-| Lasso Regression | `models/Lasso_Regression.pkl` |
-
-### Unsupervised
-
-| Model | Purpose |
-|---|---|
-| K-Means | Groups drivers/races into performance-style clusters. |
-
----
-
-## Features Used
-
-| Feature | Source | Type |
-|---|---|---|
-| `grid` | `results.csv` | Raw |
-| `qual_position` | `qualifying.csv` | Raw |
-| `year` | `races.csv` | Raw |
-| `driverRef_enc` | `drivers.csv` | Encoded |
-| `constructorRef_enc` | `constructors.csv` | Encoded |
-| `circuitRef_enc` | `circuits.csv` | Encoded |
-| `driver_avg_finish` | Computed | Rolling 5-race form |
-| `team_avg_finish` | Computed | Rolling 5-race constructor form |
-| `driver_win_rate` | Computed | Rolling 10-race win rate |
-| `pit_stop_count` | `pit_stops.csv` | Aggregated |
-| `avg_lap_ms` | `lap_times.csv` | Aggregated |
-
----
-
-## CI/CD
-
-GitHub Actions runs on pushes and pull requests.
-
-Main checks:
-
-1. Required project files exist.
-2. Python modules compile.
-3. `params.yaml` contains the expected structure.
-4. `dvc.yaml` has all five stages and no duplicate outputs.
-5. Selected simulation and strategy tests pass.
-6. The local model registry module can load registry entries.
-7. Docker project files exist.
-
----
-
-## Troubleshooting
-
-| Problem | Fix |
-|---|---|
-| SSL certificate error during install | Use `.\install.ps1` or configure `pip.ini` with trusted hosts. |
-| `No module named joblib` | Install dependencies again with the trusted-host command above. |
-| DVC duplicate output error | Keep `metrics.json` only in the `evaluate` stage metrics section. |
-| Models not found in app | Run `python src/train_models.py` or `dvc repro` first. |
-| Port 8501 busy | Run `streamlit run app.py --server.port 8502`. |
-| Docker app starts without predictions | Train models first so `models/` contains the required artifacts. |
-
----
+The tests cover data loading, required model artifacts, and prediction behavior. No test-result count is claimed here because results depend on the checked-out environment and artifacts.
 
 ## Limitations
 
-- Predictions are estimates derived from historical data and configured
-  driver, team and circuit ratings; they are not betting or race-control advice.
-- The strategy comparison is relative to the application's tyre-degradation
-  model and does not consume live telemetry, traffic or tyre-temperature data.
-- Safety Cars and DNFs are probabilistic events, so individual simulation runs
-  can differ even when the underlying driver probabilities are unchanged.
-- The bundled constants represent a 2025-style grid and should be updated before
-  using the dashboard for another season.
+- Predictions and strategies are analytical estimates, not guarantees of race outcomes.
+- Future-grid constants and circuit assumptions are stored in source and require manual updates.
+- Historical data may not capture regulation, driver, team, weather, or car-performance changes.
+- Although Docker, DVC, and CI files are present, this repository does not contain Kubernetes manifests, EC2 provisioning, or an S3-backed DVC remote configuration.
 
-## Contributing
-
-1. Fork the repository and create a focused feature branch.
-2. Keep data-processing changes reproducible through `params.yaml` and
-   `dvc.yaml` where applicable.
-3. Add or update tests for prediction, simulation or strategy behavior.
-4. Run `python -m pytest -q` and compile changed Python modules before opening a
-   pull request.
-5. Describe the user-visible change and any regenerated model artifacts in the
-   pull request summary.
-
-Bug reports should include the command used, Python version, relevant input
-values and the complete error message.
-
----
-
-## Future Scope
-
-- MLflow visual experiment tracking.
-- Remote DVC storage such as Google Drive or S3.
-- Live race-data integration.
-- Weather API integration for dynamic strategy adjustment.
-- Lap-by-lap neural forecasting.
-- Production deployment with Kubernetes or a managed container platform.
